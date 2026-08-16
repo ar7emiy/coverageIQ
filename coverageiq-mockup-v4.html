@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoverageIQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16324F; --ink-2:#1E4468; --charcoal:#14171C;
+    --paper:#F4F5F7; --panel:#FFFFFF; --line:#E2E5EA;
+    --slate:#5B6472; --slate-2:#8A93A3;
+    --green:#3F8F6B; --green-bg:#EAF4EF;
+    --rust:#C1503A; --rust-bg:#FAEBE7;
+    --amber:#A9791E; --amber-bg:#FBF2DF;
+    --font-display:'Space Grotesk',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:var(--font-body); background:var(--paper); color:var(--ink); overflow:hidden; }
+
+  .app{ height:100vh; display:flex; flex-direction:column; }
+
+  /* top bar */
+  .topbar{
+    background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px; flex-shrink:0; gap:10px; position:relative; z-index:20;
+  }
+  .brand{ display:flex; align-items:center; gap:9px; }
+  .brand-mark{ width:28px; height:28px; border-radius:7px; background:rgba(255,255,255,0.14);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .brand-mark svg{ width:15px; height:15px; }
+  .brand h1{ font-family:var(--font-display); font-size:15px; font-weight:600; letter-spacing:-0.01em; }
+
+  .file-dropdown{ position:relative; }
+  .file-btn{
+    font-family:var(--font-body); font-size:12px; font-weight:500; color:#fff;
+    background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.18);
+    padding:7px 11px; border-radius:8px; cursor:pointer;
+    display:flex; align-items:center; gap:8px; max-width:220px;
+  }
+  .file-btn .fname{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .file-btn svg{ width:12px; height:12px; flex-shrink:0; transition:transform 0.15s ease; }
+  .file-btn.open svg{ transform:rotate(180deg); }
+  .file-btn:disabled{ opacity:0.5; cursor:default; }
+
+  .file-menu{
+    display:none; position:absolute; top:calc(100% + 6px); right:0; width:270px;
+    background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.18); z-index:30;
+  }
+  .file-menu.show{ display:block; }
+  .file-menu-label{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--slate-2); padding:9px 12px 5px; }
+  .file-item{
+    padding:9px 12px; cursor:pointer; color:var(--ink); border-top:1px solid var(--line);
+  }
+  .file-item:hover{ background:var(--paper); }
+  .file-item.active{ background:#EEF3F8; }
+  .file-item-row{ display:flex; align-items:center; gap:9px; }
+  .file-item-prefix{ font-family:var(--font-mono); font-size:10px; background:var(--paper); color:var(--slate-2);
+    padding:2px 6px; border-radius:8px; flex-shrink:0; }
+  .file-item.active .file-item-prefix{ background:var(--ink); color:#fff; }
+  .file-item-name{ font-size:12.5px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .file-item.flagged{ cursor:default; }
+  .file-item.flagged:hover{ background:none; }
+  .file-item.flagged .file-item-name{ color:var(--slate-2); }
+  .flag-warning{
+    display:flex; align-items:center; gap:5px; margin-top:5px;
+    font-family:var(--font-mono); font-size:10px; color:var(--rust);
+  }
+  .flag-warning svg{ width:11px; height:11px; flex-shrink:0; }
+
+  /* workspace */
+  .workspace{ flex:1; display:flex; overflow:hidden; position:relative; }
+
+  .flags-pane{
+    flex:1 1 auto; overflow-y:auto; padding:18px clamp(16px,3vw,28px);
+    transition:flex-basis 0.35s ease; min-width:0; position:relative;
+  }
+  .flags-inner{ max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
+
+  .state-msg{
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
+    padding:70px 20px; color:var(--slate);
+  }
+  .state-msg .icon-ring{ width:40px; height:40px; border-radius:50%; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; margin-bottom:2px; }
+  .state-msg h2{ font-family:var(--font-display); font-size:15px; color:var(--ink); font-weight:600; }
+  .state-msg p{ font-size:12.5px; max-width:300px; line-height:1.5; }
+
+  /* flag block */
+  .flag-block{ background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .flag-block.status-not-met{ border-left:3px solid var(--rust); }
+  .flag-block.status-review{ border-left:3px solid var(--amber); }
+  .flag-block.status-met{ border-left:3px solid var(--green); }
+
+  .flag-head{ padding:13px 15px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .flag-eyebrow{ font-family:var(--font-mono); font-size:10px; color:var(--slate-2); margin-bottom:3px; }
+  .flag-name{ font-family:var(--font-display); font-size:14px; font-weight:600; }
+  .badge{ font-family:var(--font-mono); font-size:10px; font-weight:500; padding:3px 8px; border-radius:20px;
+    white-space:nowrap; display:flex; align-items:center; gap:5px; flex-shrink:0; margin-top:2px; }
+  .badge::before{ content:''; width:6px; height:6px; border-radius:50%; }
+  .badge.not-met{ background:var(--rust-bg); color:var(--rust); }
+  .badge.not-met::before{ background:var(--rust); }
+  .badge.review{ background:var(--amber-bg); color:var(--amber); }
+  .badge.review::before{ background:var(--amber); }
+  .badge.met{ background:var(--green-bg); color:var(--green); }
+  .badge.met::before{ background:var(--green); }
+
+  .evidence-panel{ padding:0 15px 15px; display:flex; flex-direction:column; gap:10px; }
+  .ev-row .ev-label{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--slate-2); margin-bottom:4px; }
+  .ev-mono{ font-family:var(--font-mono); font-size:11.5px; line-height:1.6; color:#3A4250;
+    background:var(--paper); padding:9px 11px; border-radius:6px; }
+  .ev-mono.suggested{ background:var(--green-bg); color:#1F4A38; }
+  .ev-text{ font-size:12.5px; line-height:1.55; color:var(--slate); }
+
+  /* pdf pane */
+  .pdf-pane{
+    flex:0 0 0px; width:0; overflow:hidden; background:#EDEFF2; border-left:1px solid var(--line);
+    display:flex; flex-direction:column; transition:flex-basis 0.35s ease, width 0.35s ease;
+  }
+  .workspace.pdf-open .flags-pane{ flex-basis:44%; }
+  .workspace.pdf-open .pdf-pane{ flex-basis:56%; width:56%; }
+
+  .pdf-pane-header{
+    padding:12px 14px; background:var(--panel); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+  }
+  .pdf-pane-title{ font-size:12.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pdf-pane-close{ background:none; border:none; cursor:pointer; color:var(--slate); padding:4px; flex-shrink:0; }
+  .pdf-pane-close svg{ width:15px; height:15px; }
+
+  .pdf-placeholder-wrap{ flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .pdf-page{
+    width:100%; max-width:480px; aspect-ratio:8.5/11; background:#fff; border-radius:4px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .pdf-page-inner{ text-align:center; color:var(--slate-2); }
+  .pdf-page-inner svg{ width:26px; height:26px; margin-bottom:8px; }
+  .pdf-page-inner p{ font-size:11px; font-family:var(--font-mono); }
+
+  /* right-edge tab */
+  .pdf-tab{
+    position:fixed; top:50%; right:0; transform:translateY(-50%);
+    background:var(--ink); color:#fff; border:none; cursor:pointer; z-index:25;
+    font-family:var(--font-body); font-size:12px; font-weight:600;
+    padding:12px 8px; border-radius:8px 0 0 8px; writing-mode:vertical-rl; text-orientation:mixed;
+    display:flex; align-items:center; gap:6px; box-shadow:-3px 0 12px rgba(0,0,0,0.12);
+  }
+  .pdf-tab svg{ width:13px; height:13px; transform:rotate(90deg); }
+
+  @media (max-width:760px){
+    .workspace.pdf-open .flags-pane{ display:none; }
+    .workspace.pdf-open .pdf-pane{ position:fixed; inset:0; top:49px; flex-basis:100%; width:100%; z-index:22; }
+    .pdf-tab{ display:none; }
+  }
+
+  /* loader overlay */
+  .loader-overlay{
+    position:absolute; inset:0; z-index:15;
+    background:rgba(255,255,255,0.74);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    opacity:0; pointer-events:none; transition:opacity 0.45s ease;
+  }
+  .loader-overlay.show{ opacity:1; pointer-events:all; }
+  .cube-stage{ width:100%; max-width:340px; height:200px; position:relative; perspective:900px; perspective-origin:50% 50%; overflow:hidden; }
+  .cube-wrapper{ position:absolute; top:50%; left:50%; width:0; height:0; transform-style:preserve-3d; }
+  .cube{ position:absolute; width:20px; height:20px; margin:-10px 0 0 -10px; transform-style:preserve-3d;
+    filter:drop-shadow(0 4px 7px rgba(22,50,79,0.22)); }
+  .cube .face{ position:absolute; width:20px; height:20px; background:linear-gradient(135deg, var(--ink-2), var(--ink));
+    border:1px solid rgba(22,50,79,0.15); }
+  .cube .face.top{ background:linear-gradient(135deg, #4A7CAC, var(--ink-2)); }
+  .cube .face.bottom{ background:#0F2438; }
+  .cube .face.front{ transform:rotateY(0deg) translateZ(10px); }
+  .cube .face.back{ transform:rotateY(180deg) translateZ(10px); }
+  .cube .face.right{ transform:rotateY(90deg) translateZ(10px); }
+  .cube .face.left{ transform:rotateY(-90deg) translateZ(10px); }
+  .cube .face.top{ transform:rotateX(90deg) translateZ(10px); }
+  .cube .face.bottom{ transform:rotateX(-90deg) translateZ(10px); }
+  .loader-caption{ font-family:var(--font-mono); font-size:11.5px; color:var(--slate); text-align:center; }
+  .loader-caption .fname{ color:var(--ink); font-weight:500; }
+  .loader-dot{ display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--amber);
+    margin-left:6px; animation:blink 1s ease-in-out infinite; }
+  @keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+
+  /* demo controls */
+  .demo-controls{ position:fixed; bottom:14px; left:14px; background:var(--charcoal); border-radius:10px;
+    padding:8px; display:flex; gap:6px; z-index:50; box-shadow:0 6px 20px rgba(0,0,0,0.25); }
+  .demo-controls button{ font-family:var(--font-mono); font-size:10px; color:rgba(255,255,255,0.6);
+    background:none; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 9px; cursor:pointer; }
+  .demo-controls button.active{ color:#14171C; background:#fff; border-color:#fff; }
+  .demo-controls-label{ font-family:var(--font-mono); font-size:9px; color:rgba(255,255,255,0.35);
+    align-self:center; padding:0 4px; text-transform:uppercase; letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <h1>CoverageIQ</h1>
+    </div>
+    <div class="file-dropdown">
+      <button class="file-btn" id="fileBtn">
+        <span class="fname" id="fileBtnLabel">Select a file…</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="file-menu" id="fileMenu">
+        <div class="file-menu-label">Input folder</div>
+        <div id="fileMenuList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace" id="workspace">
+    <div class="flags-pane" id="flagsPane">
+      <div class="flags-inner" id="flagsInner"></div>
+      <div class="loader-overlay" id="loaderOverlay">
+        <div class="cube-stage" id="cubeStage"></div>
+        <div class="loader-caption">Loading <span class="fname" id="loaderFname">—</span><span class="loader-dot"></span></div>
+      </div>
+    </div>
+    <div class="pdf-pane" id="pdfPane">
+      <div class="pdf-pane-header">
+        <span class="pdf-pane-title" id="pdfPaneTitle">—</span>
+        <button class="pdf-pane-close" id="pdfClose">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="pdf-placeholder-wrap">
+        <div class="pdf-page"><div class="pdf-page-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg>
+          <p>PDF preview — placeholder</p>
+        </div></div>
+        <div class="pdf-page"><div class="pdf-page-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg>
+          <p>page 2</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="pdf-tab" id="pdfTab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+    View PDF
+  </button>
+</div>
+
+<div class="demo-controls">
+  <span class="demo-controls-label">Preview</span>
+  <button data-state="empty">No files</button>
+  <button data-state="ready" class="active">With submissions</button>
+</div>
+
+<script>
+  const submissionsData = [
+    {
+      id:'005', filename:'Nimbus_Tech_DO_Quote.pdf', input:true, output:false, flags:[]
+    },
+    {
+      id:'004', filename:'Acme_Holdings_DO_Policy.pdf', input:true, output:true,
+      flags:[
+        { name:'Additional Side A Limit', status:'met' },
+        { name:'Full Application Severability', status:'not-met',
+          original:'"...knowledge possessed by the Chief Executive Officer or Chief Financial Officer shall be imputed to the Company for purposes of the Application..."',
+          replacement:'"No statement in the Application shall be imputed to any Insured Person for the purpose of determining coverage under this Policy."',
+          explanation:'The current wording still ties innocent directors to a co-insured\u2019s misstatement through the CEO/CFO carve-in. Removing it gives full severability instead of partial.' },
+        { name:'Non-Rescindable Side A', status:'review',
+          original:'"...provided that this provision shall not apply where a final, non-appealable adjudication establishes...deliberate fraud..."',
+          replacement:'"...non-rescindability shall be void only as to the Insured Person against whom such adjudication is entered, and shall remain in full force for all other Insured Persons."',
+          explanation:'As written, it\u2019s unclear whether one director\u2019s fraud finding could void non-rescindability for everyone. This narrows the carve-out to the individual only.' },
+        { name:'Bankruptcy Carveback to I v. I', status:'met' },
+        { name:'Private For-Profit ODL', status:'not-met',
+          original:'"...Outside Entity shall mean any not-for-profit organization..."',
+          replacement:'"...Outside Entity shall also mean any for-profit entity, if such position was undertaken at the specific request or direction of the Company."',
+          explanation:'No for-profit outside directorship coverage currently exists. Worth adding if any directors sit on for-profit boards at the company\u2019s request.' }
+      ]
+    },
+    {
+      id:'003', filename:'Beacon_Robotics_DO_Renewal.pdf', input:true, output:true,
+      flags:[
+        { name:'Additional Side A Limit', status:'review',
+          original:'"...total Limit of Liability of $10,000,000 applies in the aggregate to Insuring Agreements A, B and C..."',
+          replacement:'"...a Side A-only Difference-in-Conditions Limit of Liability of $2,500,000, excess of the underlying limit, is provided solely for Non-Indemnifiable Loss..."',
+          explanation:'No dedicated Side A-only limit sits above the shared tower. A standalone DIC layer protects directors if the shared limit is exhausted by the entity or Side B/C claims.' },
+        { name:'Full Application Severability', status:'met' },
+        { name:'Non-Rescindable Side A', status:'met' },
+        { name:'Bankruptcy Carveback to I v. I', status:'met' },
+        { name:'Private For-Profit ODL', status:'review',
+          original:'"...Outside Entity shall mean any not-for-profit organization..."',
+          replacement:'"...Outside Entity shall also mean any for-profit entity, if such position was undertaken at the specific request of the Company, subject to a $1,000,000 sublimit."',
+          explanation:'Same gap as Acme — confirm whether any directors hold for-profit outside board seats before renewal binds.' }
+      ]
+    },
+    {
+      id:'002', filename:'Orbital_Freight_DO_Renewal.pdf', input:false, output:true, flags:[]
+    }
+  ];
+
+  const badgeLabel = { 'not-met':'Not Met', 'review':'Needs Review', 'met':'Met' };
+
+  let selectedId = null;
+  let demoState = 'ready';
+  let isFirstRender = true;
+  let loaderPlaying = false;
+
+  const fileBtn = document.getElementById('fileBtn');
+  const fileBtnLabel = document.getElementById('fileBtnLabel');
+  const fileMenu = document.getElementById('fileMenu');
+  const fileMenuList = document.getElementById('fileMenuList');
+  const flagsInner = document.getElementById('flagsInner');
+  const workspace = document.getElementById('workspace');
+  const pdfTab = document.getElementById('pdfTab');
+  const pdfPane = document.getElementById('pdfPane');
+  const pdfPaneTitle = document.getElementById('pdfPaneTitle');
+  const pdfClose = document.getElementById('pdfClose');
+  const loaderOverlay = document.getElementById('loaderOverlay');
+  const cubeStage = document.getElementById('cubeStage');
+  const loaderFname = document.getElementById('loaderFname');
+
+  function allSubmissions(){ return demoState === 'empty' ? [] : submissionsData; }
+  function completeSubmissions(){ return allSubmissions().filter(s => s.input && s.output); }
+
+  function renderMenu(){
+    const list = allSubmissions();
+    const complete = completeSubmissions();
+    fileMenuList.innerHTML = '';
+    fileBtn.disabled = list.length === 0;
+
+    if (list.length === 0){
+      fileBtnLabel.textContent = 'No files yet';
+      return;
+    }
+    if (!selectedId || !complete.find(s => s.id === selectedId)){
+      selectedId = complete.length ? complete[0].id : null;
+    }
+
+    list.forEach(s => {
+      const isComplete = s.input && s.output;
+      const item = document.createElement('div');
+      item.className = 'file-item' + (isComplete ? '' : ' flagged') + (s.id === selectedId ? ' active' : '');
+      let warningHtml = '';
+      if (!isComplete){
+        const missing = !s.input ? 'input file' : 'output file';
+        warningHtml = `<div class="flag-warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg>
+          Missing ${missing}
+        </div>`;
+      }
+      item.innerHTML = `
+        <div class="file-item-row">
+          <span class="file-item-prefix">${s.id}</span>
+          <span class="file-item-name">${s.filename}</span>
+        </div>
+        ${warningHtml}
+      `;
+      if (isComplete){
+        item.addEventListener('click', () => selectFile(s.id));
+      }
+      fileMenuList.appendChild(item);
+    });
+
+    const current = complete.find(s => s.id === selectedId);
+    fileBtnLabel.textContent = current ? current.filename : 'No completed reviews yet';
+  }
+
+  function renderFlagsContent(){
+    const complete = completeSubmissions();
+    const current = complete.find(s => s.id === selectedId);
+
+    if (!current){
+      flagsInner.innerHTML = `
+        <div class="state-msg">
+          <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg></div>
+          <h2>Waiting for a submission</h2>
+          <p>Drop a D&amp;O policy into Copilot to start a review. Flags will appear here once both the file and its analysis are ready.</p>
+        </div>`;
+      return;
+    }
+
+    flagsInner.innerHTML = '';
+    current.flags.forEach((f, i) => {
+      const hasEvidence = f.status !== 'met';
+      const block = document.createElement('div');
+      block.className = `flag-block status-${f.status}`;
+      block.innerHTML = `
+        <div class="flag-head">
+          <div>
+            <div class="flag-eyebrow">Suggestion Flag 0${i+1}</div>
+            <div class="flag-name">${f.name}</div>
+          </div>
+          <span class="badge ${f.status}">${badgeLabel[f.status]}</span>
+        </div>
+        ${hasEvidence ? `
+        <div class="evidence-panel">
+          <div class="ev-row"><div class="ev-label">Original text</div><div class="ev-mono">${f.original}</div></div>
+          <div class="ev-row"><div class="ev-label">Replace with</div><div class="ev-mono suggested">${f.replacement}</div></div>
+          <div class="ev-row"><div class="ev-label">Explanation</div><div class="ev-text">${f.explanation}</div></div>
+        </div>` : ''}
+      `;
+      flagsInner.appendChild(block);
+    });
+  }
+
+  function refreshChrome(){
+    renderMenu();
+    const complete = completeSubmissions();
+    const current = complete.find(s => s.id === selectedId);
+    pdfTab.style.display = current ? 'flex' : 'none';
+    if (current) pdfPaneTitle.textContent = current.filename;
+  }
+
+  function selectFile(id){
+    if (id === selectedId || loaderPlaying) return;
+    fileMenu.classList.remove('show');
+    fileBtn.classList.remove('open');
+
+    const target = completeSubmissions().find(s => s.id === id);
+    if (!target) return;
+
+    if (isFirstRender){
+      selectedId = id;
+      refreshChrome();
+      renderFlagsContent();
+      isFirstRender = false;
+      return;
+    }
+
+    playLoader(target.filename, () => {
+      selectedId = id;
+      refreshChrome();
+      renderFlagsContent();
+    });
+  }
+
+  /* ---------- cube loader ---------- */
+
+  function lerp(a, b, t){ return a + (b - a) * t; }
+  function rand(min, max){ return Math.random() * (max - min) + min; }
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  function easeInOutCubic(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+
+  function segment(a, b, steps, includeStart){
+    const pts = [];
+    const startI = includeStart ? 0 : 1;
+    for (let i = startI; i <= steps; i++) pts.push({ x: lerp(a.x,b.x,i/steps), y: lerp(a.y,b.y,i/steps) });
+    return pts;
+  }
+
+  // base checkmark design, authored around a ~200x115 bounding box
+  const BASE_ANCHORS = [{x:-95,y:-15}, {x:-38,y:45}, {x:100,y:-70}];
+  const BASE_EXTENT_X = 100, BASE_EXTENT_Y = 70;
+
+  const EXPLODE = 750, ROTATE = 700, REASSEMBLE = 750;
+  const TOTAL = EXPLODE + ROTATE + REASSEMBLE;
+
+  function playLoader(filename, onDone){
+    loaderPlaying = true;
+    fileBtn.disabled = true;
+    loaderFname.textContent = filename;
+    loaderOverlay.classList.add('show');
+    cubeStage.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cube-wrapper';
+    cubeStage.appendChild(wrapper);
+
+    // measure the ACTUAL rendered stage so cubes are guaranteed to stay inside it
+    const rect = cubeStage.getBoundingClientRect();
+    const padding = 14, cubeHalf = 10;
+    const halfW = Math.max(rect.width / 2 - padding - cubeHalf, 30);
+    const halfH = Math.max(rect.height / 2 - padding - cubeHalf, 30);
+    const shapeScale = Math.min(halfW / BASE_EXTENT_X, halfH / BASE_EXTENT_Y, 1.5);
+
+    const basePoints = [
+      ...segment(BASE_ANCHORS[0], BASE_ANCHORS[1], 4, true),
+      ...segment(BASE_ANCHORS[1], BASE_ANCHORS[2], 9, false)
+    ];
+
+    const cubes = basePoints.map(p => {
+      const ax = p.x * shapeScale, ay = p.y * shapeScale;
+      const sideSign = ax < -3 ? -1 : (ax > 3 ? 1 : (Math.random() < 0.5 ? -1 : 1));
+      const roomX = Math.max(halfW - Math.abs(ax), 20);
+      const roomY = Math.max(halfH - Math.abs(ay), 20);
+      const exploded = {
+        x: ax + sideSign * roomX * rand(0.55, 0.95),
+        y: ay + (Math.random() < 0.5 ? -1 : 1) * roomY * rand(0.35, 0.85),
+        z: rand(-60, 60) * Math.min(shapeScale, 1)
+      };
+      const rotSpeed = {
+        x: rand(0.12, 0.30) * (Math.random() < 0.5 ? -1 : 1),
+        y: rand(0.12, 0.30) * (Math.random() < 0.5 ? -1 : 1),
+        z: rand(0.04, 0.12) * (Math.random() < 0.5 ? -1 : 1)
+      };
+
+      const cubeWrap = document.createElement('div');
+      cubeWrap.style.position = 'absolute'; cubeWrap.style.left = '0'; cubeWrap.style.top = '0';
+      cubeWrap.style.transformStyle = 'preserve-3d';
+      const cube = document.createElement('div');
+      cube.className = 'cube';
+      ['front','back','left','right','top','bottom'].forEach(f => {
+        const face = document.createElement('div');
+        face.className = 'face ' + f;
+        cube.appendChild(face);
+      });
+      cubeWrap.appendChild(cube);
+      wrapper.appendChild(cubeWrap);
+
+      return { assembled:{x:ax,y:ay,z:0}, exploded, rotSpeed, wrap:cubeWrap, cube };
+    });
+
+    const start = performance.now();
+    function frame(now){
+      const elapsed = now - start;
+      const spinElapsed = Math.min(elapsed, EXPLODE + ROTATE);
+
+      cubes.forEach(c => {
+        let pos;
+        if (elapsed <= EXPLODE){
+          const t = easeOutCubic(elapsed / EXPLODE);
+          pos = { x: lerp(c.assembled.x,c.exploded.x,t), y: lerp(c.assembled.y,c.exploded.y,t), z: lerp(c.assembled.z,c.exploded.z,t) };
+        } else if (elapsed <= EXPLODE + ROTATE){
+          const floatT = (elapsed - EXPLODE) / ROTATE;
+          pos = { x: c.exploded.x, y: c.exploded.y + Math.sin(floatT * Math.PI * 2) * 4, z: c.exploded.z };
+        } else {
+          const t = easeInOutCubic(Math.min((elapsed - EXPLODE - ROTATE) / REASSEMBLE, 1));
+          pos = { x: lerp(c.exploded.x,c.assembled.x,t), y: lerp(c.exploded.y,c.assembled.y,t), z: lerp(c.exploded.z,c.assembled.z,t) };
+        }
+        c.wrap.style.transform = `translate3d(${pos.x}px, ${pos.y}px, ${pos.z}px)`;
+
+        let rot;
+        if (elapsed <= EXPLODE + ROTATE){
+          rot = { x:c.rotSpeed.x*spinElapsed, y:c.rotSpeed.y*spinElapsed, z:c.rotSpeed.z*spinElapsed };
+        } else {
+          const handoff = { x:c.rotSpeed.x*(EXPLODE+ROTATE), y:c.rotSpeed.y*(EXPLODE+ROTATE), z:c.rotSpeed.z*(EXPLODE+ROTATE) };
+          const t = easeOutCubic(Math.min((elapsed - EXPLODE - ROTATE) / REASSEMBLE, 1));
+          rot = { x:lerp(handoff.x,0,t), y:lerp(handoff.y,0,t), z:lerp(handoff.z,0,t) };
+        }
+        c.cube.style.transform = `rotateX(${rot.x}deg) rotateY(${rot.y}deg) rotateZ(${rot.z}deg)`;
+      });
+
+      if (elapsed < TOTAL){
+        requestAnimationFrame(frame);
+      } else {
+        onDone();
+        loaderOverlay.classList.remove('show');
+        loaderPlaying = false;
+        fileBtn.disabled = false;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- wiring ---------- */
+
+  fileBtn.addEventListener('click', () => {
+    fileMenu.classList.toggle('show');
+    fileBtn.classList.toggle('open');
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.file-dropdown')){
+      fileMenu.classList.remove('show');
+      fileBtn.classList.remove('open');
+    }
+  });
+
+  pdfTab.addEventListener('click', () => workspace.classList.add('pdf-open'));
+  pdfClose.addEventListener('click', () => workspace.classList.remove('pdf-open'));
+
+  document.querySelectorAll('.demo-controls button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.demo-controls button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      demoState = btn.dataset.state;
+      selectedId = null;
+      isFirstRender = true;
+      workspace.classList.remove('pdf-open');
+      refreshChrome();
+      renderFlagsContent();
+    });
+  });
+
+  refreshChrome();
+  renderFlagsContent();
+  isFirstRender = false;
+</script>
+
+</body>
+</html>
