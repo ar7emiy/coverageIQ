@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoverageIQ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#16324F; --ink-2:#1E4468; --charcoal:#14171C;
@@ -14,6 +16,7 @@
     --green:#3F8F6B; --green-bg:#EAF4EF;
     --rust:#C1503A; --rust-bg:#FAEBE7;
     --amber:#A9791E; --amber-bg:#FBF2DF;
+    --gold:#D4AF37;
     --font-display:'Space Grotesk',sans-serif;
     --font-body:'Inter',sans-serif;
     --font-mono:'IBM Plex Mono',monospace;
@@ -22,7 +25,40 @@
   html,body{ height:100%; }
   body{ font-family:var(--font-body); background:var(--paper); color:var(--ink); overflow:hidden; }
 
-  .app{ height:100vh; display:flex; flex-direction:column; }
+  /* ---------- splash screen ---------- */
+  /* Text sits pinned near the bottom edge, clear of the cube's footprint in
+     the vertical center, rather than centered on top of it. */
+  #splashScreen{
+    position:fixed; inset:0; z-index:100; background:#ffffff;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+    padding-bottom:9vh; gap:22px;
+    transition:opacity 0.5s ease;
+  }
+  #splashScreen.hidden{ opacity:0; pointer-events:none; }
+  /* Full-viewport cube layer behind the wordmark/button — position:absolute here
+     fills #splashScreen (its nearest positioned ancestor) completely rather than
+     being sized by flex content, so it's never a small "contained" box. */
+  #splashCubeStage{ position:absolute; inset:0; z-index:0; }
+  #splashCubeStage canvas{ width:100%; height:100%; display:block; }
+  #splashWordmark{
+    position:relative; z-index:1;
+    font-family:'Poppins', sans-serif; font-weight:700; font-size:34px;
+    color:#3a3f46; letter-spacing:-0.01em; opacity:1;
+  }
+  #splashWordmark span{ color:var(--gold); }
+  #enterBtn{
+    position:relative; z-index:1;
+    font-family:var(--font-body); font-size:13.5px; font-weight:600; color:#fff;
+    background:var(--ink); border:none; padding:11px 26px; border-radius:24px; cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  #enterBtn:hover{ background:var(--ink-2); }
+  #enterBtn.fading{ opacity:0; pointer-events:none; transition:opacity 0.25s ease; }
+  #splashWordmark.fading{ opacity:0; transition:opacity 0.25s ease; }
+
+  /* ---------- app ---------- */
+  .app{ height:100vh; display:flex; flex-direction:column; opacity:0; transition:opacity 0.4s ease; }
+  .app.ready{ opacity:1; }
 
   /* top bar */
   .topbar{
@@ -32,7 +68,7 @@
   .brand{ display:flex; align-items:center; gap:9px; }
   .brand-mark{ width:28px; height:28px; border-radius:7px; background:rgba(255,255,255,0.14);
     display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .brand-mark svg{ width:15px; height:15px; }
+  .brand-mark svg{ width:20px; height:20px; }
   .brand h1{ font-family:var(--font-display); font-size:15px; font-weight:600; letter-spacing:-0.01em; }
 
   .file-dropdown{ position:relative; }
@@ -95,9 +131,9 @@
 
   /* flag block */
   .flag-block{ background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-  .flag-block.status-not-met{ border-left:3px solid var(--rust); }
-  .flag-block.status-review{ border-left:3px solid var(--amber); }
-  .flag-block.status-met{ border-left:3px solid var(--green); }
+  .flag-block.status-optimization{ border-left:3px solid var(--rust); }
+  .flag-block.status-manual-review{ border-left:3px solid var(--amber); }
+  .flag-block.status-pass{ border-left:3px solid var(--green); }
 
   .flag-head{ padding:13px 15px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
   .flag-eyebrow{ font-family:var(--font-mono); font-size:10px; color:var(--slate-2); margin-bottom:3px; }
@@ -105,12 +141,12 @@
   .badge{ font-family:var(--font-mono); font-size:10px; font-weight:500; padding:3px 8px; border-radius:20px;
     white-space:nowrap; display:flex; align-items:center; gap:5px; flex-shrink:0; margin-top:2px; }
   .badge::before{ content:''; width:6px; height:6px; border-radius:50%; }
-  .badge.not-met{ background:var(--rust-bg); color:var(--rust); }
-  .badge.not-met::before{ background:var(--rust); }
-  .badge.review{ background:var(--amber-bg); color:var(--amber); }
-  .badge.review::before{ background:var(--amber); }
-  .badge.met{ background:var(--green-bg); color:var(--green); }
-  .badge.met::before{ background:var(--green); }
+  .badge.optimization{ background:var(--rust-bg); color:var(--rust); }
+  .badge.optimization::before{ background:var(--rust); }
+  .badge.manual-review{ background:var(--amber-bg); color:var(--amber); }
+  .badge.manual-review::before{ background:var(--amber); }
+  .badge.pass{ background:var(--green-bg); color:var(--green); }
+  .badge.pass::before{ background:var(--green); }
 
   .evidence-panel{ padding:0 15px 15px; display:flex; flex-direction:column; gap:10px; }
   .ev-row .ev-label{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
@@ -119,6 +155,21 @@
     background:var(--paper); padding:9px 11px; border-radius:6px; }
   .ev-mono.suggested{ background:var(--green-bg); color:#1F4A38; }
   .ev-text{ font-size:12.5px; line-height:1.55; color:var(--slate); }
+
+  /* coverage snapshot — one panel per present/needs-review module, not a
+     4-up grid, since a single upload represents one (occasionally two)
+     coverage(s), not four independent yes/no slots. */
+  .coverage-snapshot-label{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--slate-2); margin-bottom:8px; }
+  .coverage-panel{ display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; }
+  .coverage-panel + .coverage-panel{ margin-top:8px; }
+  .coverage-panel-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .coverage-panel.status-present .coverage-panel-dot{ background:var(--green); }
+  .coverage-panel.status-not-present .coverage-panel-dot{ background:var(--slate-2); }
+  .coverage-panel.status-manual-review .coverage-panel-dot{ background:var(--amber); }
+  .coverage-panel-name{ font-family:var(--font-display); font-size:13.5px; font-weight:600; }
+  .coverage-panel-detail{ font-family:var(--font-mono); font-size:11px; color:var(--slate); margin-top:2px; }
 
   /* pdf pane */
   .pdf-pane{
@@ -161,30 +212,26 @@
     .pdf-tab{ display:none; }
   }
 
-  /* loader overlay */
+  /* loader overlay — position:fixed on .app's direct child (not nested inside
+     .flags-pane) so it always covers the full viewport, never just the flags
+     column; .cube-stage fills it completely via position:absolute;inset:0
+     rather than a capped min(62vh,560px) box, so the cube is never cropped
+     and stays framed correctly through any resize. Same technique as the
+     splash screen above, so both cube stages are always the same size. */
+  /* Caption pinned near the bottom edge, clear of the cube's footprint in
+     the vertical center, rather than centered on top of it. */
   .loader-overlay{
-    position:absolute; inset:0; z-index:15;
-    background:rgba(255,255,255,0.74);
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    position:fixed; inset:0; z-index:50;
+    background:rgba(255,255,255,0.82);
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+    padding-bottom:9vh; gap:22px;
     opacity:0; pointer-events:none; transition:opacity 0.45s ease;
   }
   .loader-overlay.show{ opacity:1; pointer-events:all; }
-  .cube-stage{ width:100%; max-width:340px; height:200px; position:relative; perspective:900px; perspective-origin:50% 50%; overflow:hidden; }
-  .cube-wrapper{ position:absolute; top:50%; left:50%; width:0; height:0; transform-style:preserve-3d; }
-  .cube{ position:absolute; width:20px; height:20px; margin:-10px 0 0 -10px; transform-style:preserve-3d;
-    filter:drop-shadow(0 4px 7px rgba(22,50,79,0.22)); }
-  .cube .face{ position:absolute; width:20px; height:20px; background:linear-gradient(135deg, var(--ink-2), var(--ink));
-    border:1px solid rgba(22,50,79,0.15); }
-  .cube .face.top{ background:linear-gradient(135deg, #4A7CAC, var(--ink-2)); }
-  .cube .face.bottom{ background:#0F2438; }
-  .cube .face.front{ transform:rotateY(0deg) translateZ(10px); }
-  .cube .face.back{ transform:rotateY(180deg) translateZ(10px); }
-  .cube .face.right{ transform:rotateY(90deg) translateZ(10px); }
-  .cube .face.left{ transform:rotateY(-90deg) translateZ(10px); }
-  .cube .face.top{ transform:rotateX(90deg) translateZ(10px); }
-  .cube .face.bottom{ transform:rotateX(-90deg) translateZ(10px); }
-  .loader-caption{ font-family:var(--font-mono); font-size:11.5px; color:var(--slate); text-align:center; }
+  .cube-stage{ position:absolute; inset:0; z-index:0; }
+  .cube-stage canvas{ width:100%; height:100%; display:block; }
+  .loader-caption{ position:relative; z-index:1; font-family:var(--font-mono); font-size:13px; color:var(--slate); text-align:center; }
   .loader-caption .fname{ color:var(--ink); font-weight:500; }
   .loader-dot{ display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--amber);
     margin-left:6px; animation:blink 1s ease-in-out infinite; }
@@ -193,11 +240,21 @@
 </head>
 <body>
 
-<div class="app">
+<div id="splashScreen">
+  <div id="splashCubeStage"><canvas id="splashCanvas"></canvas></div>
+  <div id="splashWordmark">coverage<span>IQ</span></div>
+  <button id="enterBtn">Enter CoverageIQ</button>
+</div>
+
+<div class="app" id="app">
   <div class="topbar">
     <div class="brand">
       <div class="brand-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
+        <svg viewBox="0 0 24 24">
+          <polygon points="12,2 20,6.5 12,11 4,6.5" fill="#a4c8e1" stroke="#d4af37" stroke-width="0.6"/>
+          <polygon points="4,6.5 12,11 12,20 4,15.5" fill="#00263e" stroke="#d4af37" stroke-width="0.6"/>
+          <polygon points="20,6.5 12,11 12,20 20,15.5" fill="#001a2b" stroke="#d4af37" stroke-width="0.6"/>
+        </svg>
       </div>
       <h1>CoverageIQ</h1>
     </div>
@@ -216,10 +273,6 @@
   <div class="workspace" id="workspace">
     <div class="flags-pane" id="flagsPane">
       <div class="flags-inner" id="flagsInner"></div>
-      <div class="loader-overlay" id="loaderOverlay">
-        <div class="cube-stage" id="cubeStage"></div>
-        <div class="loader-caption">Loading <span class="fname" id="loaderFname">—</span><span class="loader-dot"></span></div>
-      </div>
     </div>
     <div class="pdf-pane" id="pdfPane">
       <div class="pdf-pane-header">
@@ -241,6 +294,11 @@
     </div>
   </div>
 
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="cube-stage" id="cubeStage"><canvas id="cubeStageCanvas"></canvas></div>
+    <div class="loader-caption">Loading <span class="fname" id="loaderFname">—</span><span class="loader-dot"></span></div>
+  </div>
+
   <button class="pdf-tab" id="pdfTab">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
     View PDF
@@ -248,323 +306,492 @@
 </div>
 
 <script>
-  // Polling interval — must match server/config.js POLL_INTERVAL_MS.
-  const POLL_INTERVAL_MS = 3000;
+/* ============================================================
+   CUBE ENGINE — shared factory used by both the splash screen and
+   the inter-page loader, so they always render at identical size
+   (both fill their fixed full-viewport parent via position:absolute;
+   inset:0 — see .coverage snapshot/.loader-overlay CSS above) and
+   behave identically on resize.
+   ============================================================ */
+function createCubeEngine(canvas){
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  const badgeLabel = { 'not-met':'Not Met', 'review':'Needs Review', 'met':'Met' };
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+  camera.position.z = 15;
 
-  let submissions = [];       // last /api/submissions poll result
-  let flagsCache = {};        // prefix -> flags array, fetched lazily per submission
-  let selectedPrefix = null;
-  let isFirstRender = true;
-  let loaderPlaying = false;
+  scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+  dirLight.position.set(5, 10, 7);
+  scene.add(dirLight);
 
-  const fileBtn = document.getElementById('fileBtn');
-  const fileBtnLabel = document.getElementById('fileBtnLabel');
-  const fileMenu = document.getElementById('fileMenu');
-  const fileMenuList = document.getElementById('fileMenuList');
-  const flagsInner = document.getElementById('flagsInner');
-  const workspace = document.getElementById('workspace');
-  const pdfTab = document.getElementById('pdfTab');
-  const pdfPane = document.getElementById('pdfPane');
-  const pdfPaneTitle = document.getElementById('pdfPaneTitle');
-  const pdfClose = document.getElementById('pdfClose');
-  const loaderOverlay = document.getElementById('loaderOverlay');
-  const cubeStage = document.getElementById('cubeStage');
-  const loaderFname = document.getElementById('loaderFname');
+  const REST_ROTATION = { x:0.22, y:0.5, z:0 };
 
-  async function fetchSubmissions(){
-    const res = await fetch('/api/submissions');
-    submissions = await res.json();
-  }
+  const logoGroup = new THREE.Group();
+  logoGroup.rotation.set(REST_ROTATION.x, REST_ROTATION.y, REST_ROTATION.z);
+  logoGroup.scale.set(0.001, 0.001, 0.001);
+  scene.add(logoGroup);
 
-  async function fetchFlags(prefix){
-    if (flagsCache[prefix]) return flagsCache[prefix];
-    const res = await fetch(`/api/submissions/${prefix}`);
-    const data = await res.json();
-    flagsCache[prefix] = data.flags;
-    return data.flags;
-  }
+  const NAVY = 0x00263e, LIGHT_BLUE = 0xa4c8e1, GREEN_A = 0x70C113, GREEN_B = 0xA3E14B;
+  const clusterCoords = [[1,0,0],[1,0,1],[1,1,0],[1,1,1]];
+  const accentCoords = { '-1,1,1': GREEN_A, '0,-1,-1': GREEN_B };
+  function coordKey(x,y,z){ return `${x},${y},${z}`; }
+  function isCluster(x,y,z){ return clusterCoords.some(c => c[0]===x && c[1]===y && c[2]===z); }
+  function pickDominant(){ return Math.random() < 0.55 ? NAVY : LIGHT_BLUE; }
 
-  function completeSubmissions(){ return submissions.filter(s => s.input && s.output); }
+  const cubes = [];
+  const cubeSize = 0.8, gap = 0.2;
 
-  function renderMenu(){
-    fileMenuList.innerHTML = '';
-    fileBtn.disabled = submissions.length === 0;
+  for (let x = -1; x <= 1; x++){
+    for (let y = -1; y <= 1; y++){
+      for (let z = -1; z <= 1; z++){
+        let color;
+        const key = coordKey(x,y,z);
+        if (isCluster(x,y,z)) color = LIGHT_BLUE;
+        else if (accentCoords[key] !== undefined) color = accentCoords[key];
+        else color = pickDominant();
 
-    if (submissions.length === 0){
-      fileBtnLabel.textContent = 'No files yet';
-      return;
-    }
+        const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+        const material = new THREE.MeshStandardMaterial({ color, roughness:0.35, metalness:0.1 });
+        const cube = new THREE.Mesh(geometry, material);
 
-    submissions.forEach(s => {
-      const isComplete = s.input && s.output;
-      const item = document.createElement('div');
-      item.className = 'file-item' + (isComplete ? '' : ' flagged') + (s.prefix === selectedPrefix ? ' active' : '');
-      let warningHtml = '';
-      if (!isComplete){
-        const missing = !s.input ? 'input file' : 'output file';
-        warningHtml = `<div class="flag-warning">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg>
-          Missing ${missing}
-        </div>`;
+        const wireGeo = new THREE.EdgesGeometry(geometry);
+        const wireMat = new THREE.LineBasicMaterial({ color:0xd4af37 });
+        cube.add(new THREE.LineSegments(wireGeo, wireMat));
+
+        cube.userData.home = new THREE.Vector3(x*(cubeSize+gap), y*(cubeSize+gap), z*(cubeSize+gap));
+        cube.userData.gridCoord = [x,y,z];
+        cube.userData.baseColor = color;
+        cube.position.copy(cube.userData.home);
+        cube.scale.set(0.001, 0.001, 0.001);
+        logoGroup.add(cube);
+        cubes.push(cube);
       }
-      item.innerHTML = `
-        <div class="file-item-row">
-          <span class="file-item-prefix">${s.prefix}</span>
-          <span class="file-item-name">${s.filename}</span>
-        </div>
-        ${warningHtml}
-      `;
-      if (isComplete){
-        item.addEventListener('click', () => selectFile(s.prefix));
-      }
-      fileMenuList.appendChild(item);
-    });
-
-    const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
-    fileBtnLabel.textContent = current ? current.filename : 'No completed reviews yet';
-  }
-
-  function renderFlagsContent(){
-    const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
-
-    if (!current){
-      flagsInner.innerHTML = `
-        <div class="state-msg">
-          <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg></div>
-          <h2>Waiting for a submission</h2>
-          <p>Drop a D&amp;O policy into Copilot to start a review. Flags will appear here once both the file and its analysis are ready.</p>
-        </div>`;
-      return;
     }
+  }
 
-    const flags = flagsCache[current.prefix] || [];
-    flagsInner.innerHTML = '';
-    flags.forEach((f, i) => {
-      const hasEvidence = f.status !== 'met';
-      const block = document.createElement('div');
-      block.className = `flag-block status-${f.status}`;
-      block.innerHTML = `
-        <div class="flag-head">
-          <div>
-            <div class="flag-eyebrow">Suggestion Flag 0${i+1}</div>
-            <div class="flag-name">${f.name}</div>
-          </div>
-          <span class="badge ${f.status}">${badgeLabel[f.status]}</span>
-        </div>
-        ${hasEvidence ? `
-        <div class="evidence-panel">
-          <div class="ev-row"><div class="ev-label">Original text</div><div class="ev-mono">${f.original}</div></div>
-          <div class="ev-row"><div class="ev-label">Replace with</div><div class="ev-mono suggested">${f.replacement}</div></div>
-          <div class="ev-row"><div class="ev-label">Explanation</div><div class="ev-text">${f.explanation}</div></div>
-        </div>` : ''}
-      `;
-      flagsInner.appendChild(block);
+  const outlineGeo = new THREE.BoxGeometry(2.8, 2.8, 2.8);
+  const outlineCube = new THREE.LineSegments(new THREE.EdgesGeometry(outlineGeo), new THREE.LineBasicMaterial({ color:0xd4af37 }));
+  outlineCube.scale.set(0.001, 0.001, 0.001);
+  logoGroup.add(outlineCube);
+
+  function resize(){
+    const rect = canvas.parentElement.getBoundingClientRect();
+    if (rect.width < 2 || rect.height < 2) return;
+    renderer.setSize(rect.width, rect.height, false);
+    camera.aspect = rect.width / rect.height;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function render(){ renderer.render(scene, camera); }
+  (function loop(){ requestAnimationFrame(loop); render(); })();
+
+  function explodeTarget(cube){
+    const h = cube.userData.home;
+    const len = Math.hypot(h.x, h.y, h.z);
+    const dist = 8 + Math.random()*2.5;
+    if (len < 0.001) return { x:0, y:0, z:dist };
+    return { x:h.x + (h.x/len)*dist, y:h.y + (h.y/len)*dist, z:h.z + (h.z/len)*dist };
+  }
+
+  function setStaticAssembled(){
+    gsap.set(logoGroup.rotation, REST_ROTATION);
+    gsap.set(logoGroup.scale, { x:1, y:1, z:1 });
+    gsap.set(outlineCube.scale, { x:0.001, y:0.001, z:0.001 });
+    cubes.forEach(c => {
+      gsap.set(c.position, { x:c.userData.home.x, y:c.userData.home.y, z:c.userData.home.z });
+      gsap.set(c.scale, { x:1, y:1, z:1 });
     });
   }
 
-  function refreshChrome(){
-    renderMenu();
-    const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
-    pdfTab.style.display = current ? 'flex' : 'none';
-    if (current) pdfPaneTitle.textContent = current.filename;
-  }
-
-  async function selectFile(prefix){
-    if (prefix === selectedPrefix || loaderPlaying) return;
-    fileMenu.classList.remove('show');
-    fileBtn.classList.remove('open');
-
-    const target = completeSubmissions().find(s => s.prefix === prefix);
-    if (!target) return;
-
-    if (isFirstRender){
-      await fetchFlags(prefix);
-      selectedPrefix = prefix;
-      refreshChrome();
-      renderFlagsContent();
-      isFirstRender = false;
-      return;
-    }
-
-    const flagsPromise = fetchFlags(prefix);
-    playLoader(target.filename, async () => {
-      await flagsPromise;
-      selectedPrefix = prefix;
-      refreshChrome();
-      renderFlagsContent();
+  function shrinkAway(duration){
+    return new Promise(resolve => {
+      gsap.to(logoGroup.scale, { x:0.001, y:0.001, z:0.001, duration, ease:'power2.in', onComplete:resolve });
     });
   }
 
-  /* ---------- cube loader ---------- */
-
-  function lerp(a, b, t){ return a + (b - a) * t; }
-  function rand(min, max){ return Math.random() * (max - min) + min; }
-  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-  function easeInOutCubic(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
-
-  function segment(a, b, steps, includeStart){
-    const pts = [];
-    const startI = includeStart ? 0 : 1;
-    for (let i = startI; i <= steps; i++) pts.push({ x: lerp(a.x,b.x,i/steps), y: lerp(a.y,b.y,i/steps) });
-    return pts;
-  }
-
-  // base checkmark design, authored around a ~200x115 bounding box
-  const BASE_ANCHORS = [{x:-95,y:-15}, {x:-38,y:45}, {x:100,y:-70}];
-  const BASE_EXTENT_X = 100, BASE_EXTENT_Y = 70;
-
-  const EXPLODE = 750, ROTATE = 700, REASSEMBLE = 750;
-  const TOTAL = EXPLODE + ROTATE + REASSEMBLE;
-
-  function playLoader(filename, onDone){
-    loaderPlaying = true;
-    fileBtn.disabled = true;
-    loaderFname.textContent = filename;
-    loaderOverlay.classList.add('show');
-    cubeStage.innerHTML = '';
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'cube-wrapper';
-    cubeStage.appendChild(wrapper);
-
-    // measure the ACTUAL rendered stage so cubes are guaranteed to stay inside it
-    const rect = cubeStage.getBoundingClientRect();
-    const padding = 14, cubeHalf = 10;
-    const halfW = Math.max(rect.width / 2 - padding - cubeHalf, 30);
-    const halfH = Math.max(rect.height / 2 - padding - cubeHalf, 30);
-    const shapeScale = Math.min(halfW / BASE_EXTENT_X, halfH / BASE_EXTENT_Y, 1.5);
-
-    const basePoints = [
-      ...segment(BASE_ANCHORS[0], BASE_ANCHORS[1], 4, true),
-      ...segment(BASE_ANCHORS[1], BASE_ANCHORS[2], 9, false)
-    ];
-
-    const cubes = basePoints.map(p => {
-      const ax = p.x * shapeScale, ay = p.y * shapeScale;
-      const sideSign = ax < -3 ? -1 : (ax > 3 ? 1 : (Math.random() < 0.5 ? -1 : 1));
-      const roomX = Math.max(halfW - Math.abs(ax), 20);
-      const roomY = Math.max(halfH - Math.abs(ay), 20);
-      const exploded = {
-        x: ax + sideSign * roomX * rand(0.55, 0.95),
-        y: ay + (Math.random() < 0.5 ? -1 : 1) * roomY * rand(0.35, 0.85),
-        z: rand(-60, 60) * Math.min(shapeScale, 1)
-      };
-      const rotSpeed = {
-        x: rand(0.12, 0.30) * (Math.random() < 0.5 ? -1 : 1),
-        y: rand(0.12, 0.30) * (Math.random() < 0.5 ? -1 : 1),
-        z: rand(0.04, 0.12) * (Math.random() < 0.5 ? -1 : 1)
-      };
-
-      const cubeWrap = document.createElement('div');
-      cubeWrap.style.position = 'absolute'; cubeWrap.style.left = '0'; cubeWrap.style.top = '0';
-      cubeWrap.style.transformStyle = 'preserve-3d';
-      const cube = document.createElement('div');
-      cube.className = 'cube';
-      ['front','back','left','right','top','bottom'].forEach(f => {
-        const face = document.createElement('div');
-        face.className = 'face ' + f;
-        cube.appendChild(face);
-      });
-      cubeWrap.appendChild(cube);
-      wrapper.appendChild(cubeWrap);
-
-      return { assembled:{x:ax,y:ay,z:0}, exploded, rotSpeed, wrap:cubeWrap, cube };
+  // full boot sequence — one-time splash animation, not time-compressed
+  function playForward(onDone){
+    gsap.set(logoGroup.rotation, REST_ROTATION);
+    gsap.set(logoGroup.scale, { x:0.001, y:0.001, z:0.001 });
+    gsap.set(outlineCube.scale, { x:0.001, y:0.001, z:0.001 });
+    cubes.forEach(c => {
+      gsap.set(c.position, { x:c.userData.home.x, y:c.userData.home.y, z:c.userData.home.z });
+      gsap.set(c.scale, { x:0.001, y:0.001, z:0.001 });
     });
 
-    const start = performance.now();
-    function frame(now){
-      const elapsed = now - start;
-      const spinElapsed = Math.min(elapsed, EXPLODE + ROTATE);
+    const tl = gsap.timeline({ onComplete: onDone });
+    tl.to(logoGroup.scale, { x:1, y:1, z:1, duration:0.01 }, 0);
+    tl.fromTo(outlineCube.scale, { x:0.001, y:0.001, z:0.001 }, { x:1, y:1, z:1, duration:0.55, ease:'power2.out' }, 0);
 
+    tl.addLabel('populate', 0.35);
+    const cubeOrder = cubes.slice().sort(() => Math.random() - 0.5);
+    cubeOrder.forEach((cube, i) => {
+      tl.to(cube.scale, { x:1, y:1, z:1, duration:0.32, ease:'back.out(2.2)' }, `populate+=${i*0.012}`);
+    });
+
+    tl.addLabel('settle', 'populate+=0.5');
+    tl.to(outlineCube.scale, { x:0.001, y:0.001, z:0.001, duration:0.3, ease:'power2.in' }, 'settle');
+    tl.to(logoGroup.rotation, { y:'+='+(Math.PI*2), duration:1.0, ease:'power2.out' }, 'settle+=0.1');
+
+    tl.addLabel('hold', 'settle+=1.4');
+    tl.addLabel('disassemble', 'hold+=1.6');
+    cubes.forEach(cube => {
+      const target = explodeTarget(cube);
+      tl.to(cube.position, { x:target.x, y:target.y, z:target.z, duration:1.5, ease:'power2.in' }, 'disassemble');
+    });
+  }
+
+  // idle wave loop — used only when the compressed loader has to wait on real data
+  let idleActive = false, idleStart = 0;
+  function startIdleLoop(){
+    idleActive = true;
+    idleStart = performance.now();
+    function tick(){
+      if (!idleActive) return;
+      const t = (performance.now() - idleStart) / 1000;
+      logoGroup.rotation.y = REST_ROTATION.y + t * 0.35;
       cubes.forEach(c => {
-        let pos;
-        if (elapsed <= EXPLODE){
-          const t = easeOutCubic(elapsed / EXPLODE);
-          pos = { x: lerp(c.assembled.x,c.exploded.x,t), y: lerp(c.assembled.y,c.exploded.y,t), z: lerp(c.assembled.z,c.exploded.z,t) };
-        } else if (elapsed <= EXPLODE + ROTATE){
-          const floatT = (elapsed - EXPLODE) / ROTATE;
-          pos = { x: c.exploded.x, y: c.exploded.y + Math.sin(floatT * Math.PI * 2) * 4, z: c.exploded.z };
-        } else {
-          const t = easeInOutCubic(Math.min((elapsed - EXPLODE - ROTATE) / REASSEMBLE, 1));
-          pos = { x: lerp(c.exploded.x,c.assembled.x,t), y: lerp(c.exploded.y,c.assembled.y,t), z: lerp(c.exploded.z,c.assembled.z,t) };
-        }
-        c.wrap.style.transform = `translate3d(${pos.x}px, ${pos.y}px, ${pos.z}px)`;
-
-        let rot;
-        if (elapsed <= EXPLODE + ROTATE){
-          rot = { x:c.rotSpeed.x*spinElapsed, y:c.rotSpeed.y*spinElapsed, z:c.rotSpeed.z*spinElapsed };
-        } else {
-          const handoff = { x:c.rotSpeed.x*(EXPLODE+ROTATE), y:c.rotSpeed.y*(EXPLODE+ROTATE), z:c.rotSpeed.z*(EXPLODE+ROTATE) };
-          const t = easeOutCubic(Math.min((elapsed - EXPLODE - ROTATE) / REASSEMBLE, 1));
-          rot = { x:lerp(handoff.x,0,t), y:lerp(handoff.y,0,t), z:lerp(handoff.z,0,t) };
-        }
-        c.cube.style.transform = `rotateX(${rot.x}deg) rotateY(${rot.y}deg) rotateZ(${rot.z}deg)`;
+        const phase = c.userData.gridCoord[0] + c.userData.gridCoord[1] + c.userData.gridCoord[2];
+        const wave = 1 + Math.sin(t*2.2 + phase*0.9) * 0.07;
+        c.scale.set(wave, wave, wave);
       });
-
-      if (elapsed < TOTAL){
-        requestAnimationFrame(frame);
-      } else {
-        Promise.resolve(onDone()).then(() => {
-          loaderOverlay.classList.remove('show');
-          loaderPlaying = false;
-          fileBtn.disabled = false;
-        });
-      }
+      requestAnimationFrame(tick);
     }
-    requestAnimationFrame(frame);
+    tick();
+  }
+  function stopIdleLoop(){
+    idleActive = false;
+    cubes.forEach(c => c.scale.set(1,1,1));
+    gsap.set(logoGroup.rotation, REST_ROTATION);
   }
 
-  /* ---------- wiring ---------- */
+  // compressed reverse loader — converge (~0.9s) -> checkpoint -> [idle wave if data isn't ready] -> dissolve (~1.0s)
+  // fits ~2.2s total when data resolves promptly; extends gracefully rather than looking stuck if it doesn't.
+  async function playReverseCompressed(dataPromise, onReady){
+    const CONVERGE = 0.9, HOLD = 0.25, DISSOLVE = 1.0;
 
-  fileBtn.addEventListener('click', () => {
-    fileMenu.classList.toggle('show');
-    fileBtn.classList.toggle('open');
-  });
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.file-dropdown')){
-      fileMenu.classList.remove('show');
-      fileBtn.classList.remove('open');
+    gsap.set(logoGroup.rotation, REST_ROTATION);
+    gsap.set(logoGroup.scale, { x:1, y:1, z:1 });
+    gsap.set(outlineCube.scale, { x:0.001, y:0.001, z:0.001 });
+    cubes.forEach(cube => {
+      const from = explodeTarget(cube);
+      gsap.set(cube.position, from);
+      gsap.set(cube.scale, { x:1, y:1, z:1 });
+    });
+
+    await new Promise(resolve => {
+      const tl = gsap.timeline({ onComplete: resolve });
+      cubes.forEach(cube => {
+        tl.to(cube.position, { x:cube.userData.home.x, y:cube.userData.home.y, z:cube.userData.home.z, duration:CONVERGE, ease:'power2.out' }, 0);
+      });
+    });
+
+    let ready = false;
+    dataPromise.then(() => { ready = true; });
+    await new Promise(r => setTimeout(r, HOLD*1000));
+
+    if (!ready){
+      startIdleLoop();
+      await dataPromise;
+      stopIdleLoop();
     }
+
+    await new Promise(resolve => {
+      const tl = gsap.timeline({ onComplete: resolve });
+      cubes.forEach(cube => {
+        tl.to(cube.scale, { x:0.001, y:0.001, z:0.001, duration:DISSOLVE, ease:'power2.in' }, 0);
+      });
+    });
+
+    onReady();
+  }
+
+  return { scene, camera, renderer, cubes, outlineCube, logoGroup, resize, setStaticAssembled, shrinkAway, playForward, playReverseCompressed };
+}
+
+/* ============================================================
+   SPLASH SCREEN — static cube at rest, click to enter, shrinks
+   then plays the full boot sequence before revealing the app.
+   ============================================================ */
+const splashEngine = createCubeEngine(document.getElementById('splashCanvas'));
+splashEngine.setStaticAssembled();
+
+document.getElementById('enterBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('enterBtn');
+  const wordmark = document.getElementById('splashWordmark');
+  btn.classList.add('fading');
+  wordmark.classList.add('fading');
+
+  const initPromise = initDashboard();
+
+  await splashEngine.shrinkAway(0.4);
+  await new Promise(resolve => splashEngine.playForward(resolve));
+  await initPromise;
+
+  document.getElementById('splashScreen').classList.add('hidden');
+  document.getElementById('app').classList.add('ready');
+});
+
+/* ============================================================
+   DASHBOARD — real data via the actual /api/submissions and
+   /api/submissions/:prefix endpoints served by server/server.js.
+   ============================================================ */
+const POLL_INTERVAL_MS = 3000;
+const badgeLabel = { 'optimization':'Optimization', 'manual-review':'Manual Review', 'pass':'Pass' };
+
+let submissions = [];
+let detailCache = {};
+let selectedPrefix = null;
+let isFirstRender = true;
+let loaderPlaying = false;
+
+const fileBtn = document.getElementById('fileBtn');
+const fileBtnLabel = document.getElementById('fileBtnLabel');
+const fileMenu = document.getElementById('fileMenu');
+const fileMenuList = document.getElementById('fileMenuList');
+const flagsInner = document.getElementById('flagsInner');
+const workspace = document.getElementById('workspace');
+const pdfTab = document.getElementById('pdfTab');
+const pdfPane = document.getElementById('pdfPane');
+const pdfPaneTitle = document.getElementById('pdfPaneTitle');
+const pdfClose = document.getElementById('pdfClose');
+const loaderOverlay = document.getElementById('loaderOverlay');
+const loaderFname = document.getElementById('loaderFname');
+
+const loaderEngine = createCubeEngine(document.getElementById('cubeStageCanvas'));
+
+async function fetchSubmissions(){
+  const res = await fetch('/api/submissions');
+  submissions = await res.json();
+}
+
+async function fetchDetail(prefix){
+  if (detailCache[prefix]) return detailCache[prefix];
+  const res = await fetch(`/api/submissions/${prefix}`);
+  const data = await res.json();
+  detailCache[prefix] = { coverage: data.coverage || [], flags: data.flags || [] };
+  return detailCache[prefix];
+}
+
+function completeSubmissions(){ return submissions.filter(s => s.input && s.output); }
+
+function renderMenu(){
+  fileMenuList.innerHTML = '';
+  fileBtn.disabled = submissions.length === 0;
+
+  if (submissions.length === 0){
+    fileBtnLabel.textContent = 'No files yet';
+    return;
+  }
+
+  submissions.forEach(s => {
+    const isComplete = s.input && s.output;
+    const item = document.createElement('div');
+    item.className = 'file-item' + (isComplete ? '' : ' flagged') + (s.prefix === selectedPrefix ? ' active' : '');
+    let warningHtml = '';
+    if (!isComplete){
+      const missing = !s.input ? 'input file' : 'output file';
+      warningHtml = `<div class="flag-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg>
+        Missing ${missing}
+      </div>`;
+    }
+    item.innerHTML = `
+      <div class="file-item-row">
+        <span class="file-item-prefix">${s.prefix}</span>
+        <span class="file-item-name">${s.filename}</span>
+      </div>
+      ${warningHtml}
+    `;
+    if (isComplete){
+      item.addEventListener('click', () => selectFile(s.prefix));
+    }
+    fileMenuList.appendChild(item);
   });
 
-  pdfTab.addEventListener('click', () => workspace.classList.add('pdf-open'));
-  pdfClose.addEventListener('click', () => workspace.classList.remove('pdf-open'));
+  const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
+  fileBtnLabel.textContent = current ? current.filename : 'No completed reviews yet';
+}
 
-  /* ---------- init + polling ---------- */
+// A single upload is one document, so it represents one coverage (or,
+// occasionally, more than one for a combined Management Liability
+// document) — not four independent yes/no slots. Show only what's
+// actually present (plus anything RULE-000 couldn't confidently classify),
+// one row each, rather than a 4-up grid listing every module regardless
+// of relevance.
+function buildCoverageSnapshot(coverage){
+  const wrap = document.createElement('div');
+  wrap.className = 'coverage-snapshot';
 
-  async function init(){
-    await fetchSubmissions();
-    const complete = completeSubmissions();
-    if (complete.length){
-      await fetchFlags(complete[0].prefix);
-      selectedPrefix = complete[0].prefix;
-    }
-    isFirstRender = false;
+  const present = (coverage || []).filter(c => c.status === 'present');
+  const review = (coverage || []).filter(c => c.status === 'manual-review');
+
+  if (!present.length && !review.length){
+    wrap.innerHTML = `
+      <div class="coverage-snapshot-label">Coverage</div>
+      <div class="coverage-panel status-not-present">
+        <span class="coverage-panel-dot"></span>
+        <div class="coverage-panel-name">No coverage identified</div>
+      </div>`;
+    return wrap;
+  }
+
+  const presentRows = present.map(c => {
+    const details = [c.limit, c.retention ? `${c.retention} retention` : null].filter(Boolean).join(' · ');
+    return `
+      <div class="coverage-panel status-present">
+        <span class="coverage-panel-dot"></span>
+        <div>
+          <div class="coverage-panel-name">${c.module}</div>
+          ${details ? `<div class="coverage-panel-detail">${details}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  const reviewRows = review.map(c => `
+    <div class="coverage-panel status-manual-review">
+      <span class="coverage-panel-dot"></span>
+      <div class="coverage-panel-name">${c.module} — needs manual review</div>
+    </div>`).join('');
+
+  wrap.innerHTML = `<div class="coverage-snapshot-label">Coverage</div>${presentRows}${reviewRows}`;
+  return wrap;
+}
+
+function renderFlagsContent(){
+  const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
+
+  if (!current){
+    flagsInner.innerHTML = `
+      <div class="state-msg">
+        <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg></div>
+        <h2>Waiting for a submission</h2>
+        <p>Drop a D&amp;O policy into Copilot to start a review. Flags will appear here once both the file and its analysis are ready.</p>
+      </div>`;
+    return;
+  }
+
+  const detail = detailCache[current.prefix] || { coverage: [], flags: [] };
+  flagsInner.innerHTML = '';
+  flagsInner.appendChild(buildCoverageSnapshot(detail.coverage));
+  detail.flags.forEach((f, i) => {
+    const evidence = f.evidence || [];
+    const rows = [];
+    if (f.finding) rows.push(`<div class="ev-row"><div class="ev-label">Finding</div><div class="ev-text">${f.finding}</div></div>`);
+    if (f.recommendation) rows.push(`<div class="ev-row"><div class="ev-label">Recommendation</div><div class="ev-mono suggested">${f.recommendation}</div></div>`);
+    evidence.forEach(e => {
+      rows.push(`<div class="ev-row"><div class="ev-label">${e.label ? `Evidence — ${e.label}` : 'Evidence'}</div><div class="ev-mono">${e.quote}</div></div>`);
+    });
+    if (f.reasoning) rows.push(`<div class="ev-row"><div class="ev-label">Reasoning</div><div class="ev-text">${f.reasoning}</div></div>`);
+    if (f.confidence) rows.push(`<div class="ev-row"><div class="ev-label">Confidence</div><div class="ev-text">${f.confidence}</div></div>`);
+
+    const block = document.createElement('div');
+    block.className = `flag-block status-${f.status}`;
+    block.innerHTML = `
+      <div class="flag-head">
+        <div>
+          <div class="flag-eyebrow">Suggestion Flag 0${i+1}${f.id ? ` · ${f.id}` : ''}</div>
+          <div class="flag-name">${f.name}</div>
+        </div>
+        <span class="badge ${f.status}">${badgeLabel[f.status]}</span>
+      </div>
+      ${rows.length ? `<div class="evidence-panel">${rows.join('')}</div>` : ''}
+    `;
+    flagsInner.appendChild(block);
+  });
+}
+
+function refreshChrome(){
+  renderMenu();
+  const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
+  pdfTab.style.display = current ? 'flex' : 'none';
+  if (current) pdfPaneTitle.textContent = current.filename;
+}
+
+async function selectFile(prefix){
+  if (prefix === selectedPrefix || loaderPlaying) return;
+  fileMenu.classList.remove('show');
+  fileBtn.classList.remove('open');
+
+  const target = completeSubmissions().find(s => s.prefix === prefix);
+  if (!target) return;
+
+  if (isFirstRender){
+    await fetchDetail(prefix);
+    selectedPrefix = prefix;
     refreshChrome();
     renderFlagsContent();
+    isFirstRender = false;
+    return;
   }
 
-  // Background polling only updates the dropdown / auto-selects when nothing
-  // is selected yet — it never plays the loading transition, which is
-  // reserved for explicit dropdown switches between already-loaded files.
-  async function poll(){
-    if (loaderPlaying) return;
-    await fetchSubmissions();
-    const complete = completeSubmissions();
-    const stillHasSelection = complete.some(s => s.prefix === selectedPrefix);
+  loaderPlaying = true;
+  fileBtn.disabled = true;
+  loaderFname.textContent = target.filename;
+  loaderOverlay.classList.add('show');
 
-    if (!stillHasSelection){
-      selectedPrefix = complete.length ? complete[0].prefix : null;
-      if (selectedPrefix) await fetchFlags(selectedPrefix);
-      renderFlagsContent();
-    }
+  const detailPromise = fetchDetail(prefix);
+  loaderEngine.playReverseCompressed(detailPromise, () => {
+    selectedPrefix = prefix;
     refreshChrome();
-  }
+    renderFlagsContent();
+    loaderOverlay.classList.remove('show');
+    loaderPlaying = false;
+    fileBtn.disabled = false;
+  });
+}
 
-  init();
+/* ---------- wiring ---------- */
+
+fileBtn.addEventListener('click', () => {
+  fileMenu.classList.toggle('show');
+  fileBtn.classList.toggle('open');
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.file-dropdown')){
+    fileMenu.classList.remove('show');
+    fileBtn.classList.remove('open');
+  }
+});
+
+pdfTab.addEventListener('click', () => workspace.classList.add('pdf-open'));
+pdfClose.addEventListener('click', () => workspace.classList.remove('pdf-open'));
+
+/* ---------- init + polling ---------- */
+
+async function initDashboard(){
+  await fetchSubmissions();
+  const complete = completeSubmissions();
+  if (complete.length){
+    await fetchDetail(complete[0].prefix);
+    selectedPrefix = complete[0].prefix;
+  }
+  isFirstRender = false;
+  refreshChrome();
+  renderFlagsContent();
   setInterval(poll, POLL_INTERVAL_MS);
+}
+
+// Background polling only updates the dropdown / auto-selects when nothing
+// is selected yet — it never plays the loading transition, which is
+// reserved for explicit dropdown switches between already-loaded files.
+async function poll(){
+  if (loaderPlaying) return;
+  await fetchSubmissions();
+  const complete = completeSubmissions();
+  const stillHasSelection = complete.some(s => s.prefix === selectedPrefix);
+
+  if (!stillHasSelection){
+    selectedPrefix = complete.length ? complete[0].prefix : null;
+    if (selectedPrefix) await fetchDetail(selectedPrefix);
+    renderFlagsContent();
+  }
+  refreshChrome();
+}
 </script>
 
 </body>

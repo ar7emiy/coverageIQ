@@ -35,7 +35,8 @@ const server = http.createServer((req, res) => {
     return sendJson(res, 200, submissions);
   }
 
-  // Flags for one complete pair, parsed from its analysis .md on demand.
+  // Coverage snapshot + flags for one complete pair, parsed from its
+  // analysis .md on demand.
   const flagsMatch = url.pathname.match(/^\/api\/submissions\/(\d+)$/);
   if (flagsMatch) {
     const prefix = flagsMatch[1];
@@ -44,7 +45,8 @@ const server = http.createServer((req, res) => {
     const mdPath = path.join(OUTPUT_DIR, sub.outputFile);
     fs.readFile(mdPath, 'utf8', (err, text) => {
       if (err) return sendJson(res, 500, { error: 'Could not read analysis file' });
-      sendJson(res, 200, { prefix, filename: sub.filename, flags: parseAnalysisMarkdown(text) });
+      const { coverage, flags } = parseAnalysisMarkdown(text);
+      sendJson(res, 200, { prefix, filename: sub.filename, coverage, flags });
     });
     return;
   }

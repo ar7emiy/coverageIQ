@@ -17,14 +17,17 @@ immediately.
 
 ## Switching from test data to the real folders
 
-Edit the defaults in [server/config.js](server/config.js), or leave the file
-alone and pass env vars instead:
+[server/config.js](server/config.js) has two `module.exports` blocks: the
+active one (test data) and a commented-out one below it pointing at the real
+OneDrive folders. To switch: comment out the first block, uncomment the
+second block.
+
+Alternatively, leave the file alone entirely and pass env vars instead —
+this overrides the test-data default without touching config.js:
 
 ```
-COVERAGEIQ_INPUT_DIR="C:\path\to\real\input" COVERAGEIQ_OUTPUT_DIR="C:\path\to\real\output" node server/server.js
+COVERAGEIQ_INPUT_DIR="C:\Users\smkenney\OneDrive\coverageIQ_AI\input" COVERAGEIQ_OUTPUT_DIR="C:\Users\smkenney\OneDrive\coverageIQ_AI\output" node server/server.js
 ```
-
-No other file needs to change.
 
 ## Naming convention & pairing
 
@@ -44,42 +47,81 @@ To manually test the missing-pair state: drop a `005_Something.pdf` into
 within a few seconds (polling interval is `POLL_INTERVAL_MS` in
 `server/config.js`, default 3s).
 
-## The analysis `.md` → flags parser (read before touching flag data)
+## Skills, rule definitions & the agent's system instructions
+
+`skills/RULE_TEMPLATE.md` is what an SME copies per rule to define its
+intent, search guidance, and PASS/OPTIMIZATION/MANUAL_REVIEW decision logic.
+`skills/rules/` holds the current filled-out rules — `RULE-000` (mandatory,
+always runs first, classifies which coverage modules the document actually
+provides) plus `DO-001` through `DO-004`. `skills/AGENT_SYSTEM_INSTRUCTIONS.md`
+is the draft system prompt for the M365 Copilot agent — folder paths,
+numbering, atomic-write requirement, the RULE-000 → rule-family gating table
+(D&O=PRESENT unlocks `DO-*`, EPLI=PRESENT unlocks `EP-*`, etc.), and the
+exact markdown output format for both the Coverage Snapshot and per-rule
+sections.
+
+## The analysis `.md` → coverage + flags parser (read before touching flag data)
 
 `server/parseAnalysis.js` is a single, isolated, heavily-commented module
-that turns an analysis `.md` file's text into the flag array the UI renders.
-It is intentionally the **only** place in the app that knows the markdown
+that turns an analysis `.md` file's text into what the UI renders. It is
+intentionally the **only** place in the app that knows the markdown
 structure — `server/server.js` just calls `parseAnalysisMarkdown(text)` and
-forwards the result as JSON; `public/index.html` just renders whatever array
-it receives.
+forwards the result as JSON; `public/index.html` just renders whatever it
+receives.
 
-The current convention (documented in full at the top of that file) is a
-provisional first draft:
+The file always starts with one mandatory `RULE-000` section (parsed into
+`coverage`, rendered as the **Coverage Snapshot panel** at the top of the
+flags pane), followed by one section per eligible rule that was actually
+evaluated (parsed into `flags`, rendered as the usual flag list below it):
 
 ```
-## <Flag Name>
-Status: Met | Not Met | Needs Review
+## RULE-000 — Coverage Classification
 
-Original: "..."
-Replacement: "..."
-Explanation: ...
+### Private Company D&O
+Status: PRESENT | NOT_PRESENT | MANUAL_REVIEW
+Confidence: High | Medium | Low
+Limit: <amount>
+Retention: <amount>
+Premium: Coverage-Specific | Combined | Not Identified
+Evidence: "<quoted document language>"          (repeatable)
+### Employment Practices Liability (EPLI)
+...same fields, always all four modules, every time...
+
+## <Rule ID> — <Rule Name>
+Status: PASS | OPTIMIZATION | MANUAL_REVIEW
+Confidence: High | Medium | Low
+
+Finding: <what was identified — PASS/OPTIMIZATION>
+Recommendation: <the ask — OPTIMIZATION only>
+Evidence: "<quoted document language>"          (repeatable)
+Evidence (<Label>): "<quoted document language>" (repeatable, labeled)
+Reasoning: <why it matters, or why MANUAL_REVIEW>
 ```
 
-`Original`/`Replacement`/`Explanation` are omitted when Status is Met — see
-`test_coverageIQ_data/output/004_Beacon_Robotics_DO_Renewal_analysis.md` for
-a worked example matching the mockup's evidence-panel data.
+See `test_coverageIQ_data/output/004_Beacon_Robotics_DO_Renewal_analysis.md`
+for a worked example (Coverage Snapshot + all four DO rules, one per status).
 
-**This will very likely need to be rewritten** once the real skill output
-format is known (per CoverageIQ-UI-README.md section 9, "Still open"). When
-that happens, only `parseAnalysisMarkdown()`'s body needs to change — as
-long as it keeps returning:
+If the real agent output ever needs to diverge from this, update
+`server/parseAnalysis.js` and `skills/AGENT_SYSTEM_INSTRUCTIONS.md` together
+— they must stay in sync. As long as `parseAnalysisMarkdown()` keeps
+returning:
 
 ```js
-[{ name: string, status: 'met' | 'not-met' | 'review',
-   original?: string, replacement?: string, explanation?: string }]
+{
+  coverage: [{ module: string, status: 'present' | 'not-present' | 'manual-review',
+               limit?: string, retention?: string, premium?: string,
+               confidence?: string, evidence?: [{ label?: string, quote: string }] }],
+  flags: [{ id?: string, name: string, status: 'pass' | 'optimization' | 'manual-review',
+            confidence?: string, finding?: string, recommendation?: string, reasoning?: string,
+            evidence?: [{ label?: string, quote: string }] }]
+}
 ```
 
-nothing in the server routing or the frontend needs to change.
+nothing in the server routing or the frontend needs to change. Two prior
+draft schemas are kept commented out at the bottom of `parseAnalysis.js` for
+reference only — neither is used anymore:
+1. Flat PASS/OPTIMIZATION/MANUAL_REVIEW with no RULE-000/coverage split.
+2. The earliest draft: `met`/`not-met`/`review` with `original`/`replacement`.
 
 ## What's not wired up yet
 

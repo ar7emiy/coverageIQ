@@ -12,3 +12,15 @@ module.exports = {
   POLL_INTERVAL_MS: 3000,
   PORT: process.env.PORT || 5175,
 };
+
+// ============================================================
+// REAL ONEDRIVE FOLDERS (smkenney's laptop)
+// To switch over: comment out the module.exports block above,
+// then uncomment the module.exports block below.
+// ============================================================
+// module.exports = {
+//   INPUT_DIR: 'C:\\Users\\smkenney\\OneDrive\\coverageIQ_AI\\input',
+//   OUTPUT_DIR: 'C:\\Users\\smkenney\\OneDrive\\coverageIQ_AI\\output',
+//   POLL_INTERVAL_MS: 3000,
+//   PORT: process.env.PORT || 5175,
+// };

@@ -1,0 +1,670 @@
+DO-004 — BI/PD Exclusion / Emotional Distress Carve-Back
+Coverage Module: Private Company D&O
+Rule Type: Coverage Optimization
+Rule Name: Bodily Injury / Property Damage Exclusion — Emotional Distress Carve-Back
+Objective
+Determine whether the Private Company D&O policy or quote contains a Bodily Injury / Property Damage (BI/PD) exclusion and, if present, whether the exclusion contains a carve-back preserving coverage for emotional distress or materially similar non-physical injury.
+A BI/PD exclusion is common and should not, by itself, be treated as an optimization issue.
+
+
+⸻
+
+
+Step 1 — Locate the BI/PD Exclusion
+Review the policy, quote, base form, and applicable endorsements for a BI/PD exclusion or materially equivalent provision.
+Search semantically for concepts including:
+Bodily Injury
+Property Damage
+BI/PD
+Bodily Injury / Property Damage
+Physical Injury
+Sickness
+Disease
+Death
+Damage to or destruction of tangible property
+Loss of use of tangible property
+Similar language excluding claims arising from bodily injury or property damage
+Do not require the exclusion to literally be titled “Bodily Injury / Property Damage Exclusion.”
+
+
+⸻
+
+
+Step 2 — If No BI/PD Exclusion Is Found
+If CoverageIQ completes a reliable review and no BI/PD exclusion is identified, do not generate an optimization recommendation.
+Status: 🟢 PASS
+Output:
+“No Bodily Injury / Property Damage exclusion identified.”
+Provide the basis for the finding where appropriate.
+If CoverageIQ cannot reliably determine whether an exclusion exists because the document is incomplete, illegible, or conflicting, return MANUAL_REVIEW rather than reporting that no exclusion exists.
+
+
+⸻
+
+
+Step 3 — Search for Emotional Distress Carve-Back
+If a BI/PD exclusion is identified, analyze the exclusion and any endorsements modifying it for an exception preserving coverage for emotional distress.
+Search semantically for concepts including:
+Emotional Distress
+Mental Anguish
+Mental Injury
+Mental Distress
+Emotional Harm
+Humiliation
+Mental Suffering
+Mental or Emotional Injury
+Similar non-physical injury concepts
+The agent must determine that the language actually functions as an exception or carve-back to the BI/PD exclusion.
+The mere appearance of “emotional distress” elsewhere in the policy does not satisfy this rule.
+
+
+⸻
+
+
+Decision Logic
+🟢
+PASS
+— No BI/PD Exclusion
+If no BI/PD exclusion is identified after a reliable review:
+No Bodily Injury / Property Damage exclusion identified.
+No optimization recommendation.
+
+
+⸻
+
+
+🟢
+PASS
+— BI/PD Exclusion With Emotional Distress Carve-Back
+If:
+A BI/PD exclusion is identified; and
+The exclusion contains an emotional distress carve-back or materially equivalent exception,
+return PASS with a green check.
+Example output:
+Bodily Injury / Property Damage exclusion identified. Emotional distress carve-back is present.
+Provide the relevant evidence.
+
+
+⸻
+
+
+⚠️
+OPTIMIZATION
+— BI/PD Exclusion Without Emotional Distress Carve-Back
+If:
+A BI/PD exclusion is identified; and
+No emotional distress or materially equivalent carve-back is identified,
+return OPTIMIZATION.
+Recommendation
+I’d suggest:
+“Consider requesting an emotional distress carve-back to the Bodily Injury / Property Damage exclusion.”
+That’s concise and broker-friendly.
+
+
+⸻
+
+
+🟡
+MANUAL_REVIEW
+Return MANUAL_REVIEW when CoverageIQ cannot reliably determine:
+Whether a BI/PD exclusion exists.
+Whether identified language actually functions as a BI/PD exclusion.
+Whether an endorsement modifies or replaces the exclusion.
+Whether emotional distress language constitutes a true carve-back.
+Whether relevant forms or endorsements are missing.
+Do not guess.
+
+
+⸻
+
+
+Important Guardrail
+CoverageIQ should follow this sequence:
+Find BI/PD exclusion → Read the actual exclusion → Search for emotional distress carve-back → Check applicable endorsements → Determine status.
+Do not search the document globally for “emotional distress” and assume that its presence satisfies the rule. The language needs to preserve coverage in relation to the BI/PD exclusion.
+Required Output
+Rule: DO-004 — BI/PD Emotional Distress Carve-Back
+Status: 🟢 PASS / ⚠️ OPTIMIZATION / 🟡 MANUAL_REVIEW
+BI/PD Exclusion Identified: Yes / No / Uncertain
+Emotional Distress Carve-Back: Yes / No / Uncertain
+Page:
+Section / Endorsement:
+Evidence:
+Recommendation:
+Confidence:
+So the core logic is very simple:
+No BI/PD exclusion → 🟢 No exclusion found
+BI/PD + emotional distress carve-back → 🟢 PASS
+BI/PD + no emotional distress carve-back → ⚠️ OPTIMIZATION
+Unclear → 🟡 MANUAL REVIEW.
+
+
+—————
+
+RULE-000 — Coverage Classification
+Rule ID: RULE-000
+Rule Name: Coverage Classification
+Rule Type: Pre-Analysis / Coverage Classification
+Execution Priority: FIRST — MANDATORY
+Applies To: All CoverageIQ D&O policy and quote analyses
+
+
+⸻
+
+
+1. Purpose
+Before CoverageIQ performs any coverage optimization analysis, it must first determine which coverage modules are actually being provided by the uploaded policy or quote.
+CoverageIQ is designed primarily for D&O and Management Liability documents. These documents may contain multiple coverage modules within the same policy or quote.
+Rule 000 must independently evaluate whether the document provides:
+Private Company D&O
+Employment Practices Liability (EPLI)
+Fiduciary Liability
+Crime
+The output of Rule 000 determines which downstream optimization skills are permitted to execute.
+CoverageIQ must classify purchased/provided coverage—not merely identify coverage language contained within a policy form.
+
+
+⸻
+
+
+2. Mandatory Full-Document Review
+CoverageIQ must review the entire available document before finalizing Rule 000.
+Review all available components, including:
+Declarations
+Quote/declaration pages
+Coverage schedules
+Premium schedules
+Limits
+Retentions/deductibles
+Insuring agreements
+Coverage parts
+Endorsements
+Forms schedules
+Definitions
+Exclusions
+Sublimits
+Notices
+Any indication that coverage is selected, purchased, included, declined, or not applicable
+CoverageIQ must not finalize coverage classification based only on the declarations page or first few pages.
+It may develop preliminary classifications while processing the document, but classifications become final only after the entire available document has been reviewed and relevant evidence reconciled.
+
+
+⸻
+
+
+3. Coverage Modules
+CoverageIQ must independently classify each of the following:
+D&O
+Search semantically for concepts including:
+Directors & Officers Liability
+Directors and Officers Liability
+D&O
+D&O Liability
+Private Company D&O
+Private Company Management Liability
+Management Liability — D&O
+Executive Liability
+Executive Protection
+Directors, Officers and Company Liability
+Organization Liability
+Company Liability
+Coverage-specific D&O limits, retentions, premiums, coverage selections, and endorsements should be evaluated as evidence.
+Important: The mere presence of Side A, Side B, or Side C language does not establish that D&O coverage was purchased.
+
+
+⸻
+
+
+EPLI
+Search semantically for concepts including:
+Employment Practices Liability
+Employment Practices Liability Insurance
+EPL
+EPLI
+Employment Liability
+Employment Practices Coverage
+Wrongful Employment Practices
+Employment Practices Wrongful Acts
+Also evaluate EPLI-specific:
+Limits
+Retentions
+Premiums
+Insuring agreements
+Endorsements
+Third-Party EPL provisions
+Employment-related exclusions
+Coverage schedules
+
+
+⸻
+
+
+Fiduciary Liability
+Search semantically for concepts including:
+Fiduciary Liability
+Fiduciary Liability Insurance
+Fiduciary Coverage
+ERISA Fiduciary Liability
+Employee Benefit Plan Fiduciary Liability
+Benefit Plan Fiduciary Liability
+Fiduciary Wrongful Act
+Also evaluate coverage-specific limits, premiums, retentions, insuring agreements, endorsements, and coverage parts.
+
+
+⸻
+
+
+Crime
+Search semantically for concepts including:
+Crime
+Commercial Crime
+Crime Coverage
+Crime Insurance
+Fidelity
+Employee Theft
+Employee Dishonesty
+Computer Fraud
+Funds Transfer Fraud
+Forgery or Alteration
+Crime may be structured differently from D&O, EPLI, and Fiduciary.
+CoverageIQ should recognize that Crime may consist of multiple separately scheduled insuring agreements, limits, or sublimits.
+
+
+⸻
+
+
+4. Evidence Collection
+For each of the four coverage modules, CoverageIQ must collect affirmative, negative, and supporting evidence before assigning a final classification.
+The agent should not simply count keyword occurrences.
+It must evaluate what the language means in context.
+
+
+⸻
+
+
+5. Evidence Hierarchy
+Tier 1 — Affirmative / Conclusive Evidence
+Strong evidence that a coverage is actually provided includes:
+Coverage + Limit
+Examples:
+Directors & Officers Liability — $2,000,000
+Employment Practices Liability — $1,000,000
+Fiduciary Liability — $1,000,000
+Employee Theft — $500,000
+A clearly identified coverage-specific limit is strong affirmative evidence.
+
+
+⸻
+
+
+Coverage Selection
+Examples:
+Included
+Purchased
+Covered
+Selected
+Coverage Provided
+Applies
+Yes
+when clearly associated with the applicable coverage module.
+
+
+⸻
+
+
+Coverage + Premium
+Examples:
+D&O Premium — $7,500
+EPLI Premium — $4,500
+Fiduciary Premium — $2,000
+A premium explicitly allocated to a specific coverage module is strong affirmative evidence that the coverage is provided.
+However, premium structure must be evaluated according to the Combined Premium rules below.
+
+
+⸻
+
+
+Coverage-Specific Declarations or Schedule
+A declarations page or coverage schedule affirmatively showing a coverage module as included is strong evidence.
+
+
+⸻
+
+
+Affirmative Coverage Endorsement
+An endorsement explicitly adding or activating a coverage module is strong evidence.
+
+
+⸻
+
+
+6. Tier 2 — Strong Supporting Evidence
+Supporting evidence includes:
+Coverage-specific retention
+Coverage-specific deductible
+Coverage-specific insuring agreement
+Coverage-specific endorsement
+Coverage-specific sublimit
+Coverage-specific exclusions
+Coverage-specific definitions
+Coverage-specific claims provisions
+Examples:
+EPLI Retention — $50,000
+D&O Retention — $25,000
+Fiduciary Retention — $10,000
+These strongly support the existence of the corresponding coverage but should be reconciled with Tier 1 evidence whenever available.
+
+
+⸻
+
+
+7. Tier 3 — Incidental Evidence
+Examples include:
+Side A/B/C wording appearing in a generic modular form
+Generic references to Directors or Officers
+Generic references to Employees
+ERISA terminology appearing in exclusions or definitions
+Crime terminology appearing incidentally
+Defined terms for coverage modules not actually purchased
+Generic insuring agreements included within an unselected modular form
+Tier 3 evidence must never independently establish that coverage is PRESENT.
+
+
+⸻
+
+
+8. Combined / Package Premium Handling
+This is a mandatory classification guardrail.
+Management Liability policies and quotes may provide multiple coverage modules under a single combined premium.
+For example:
+Management Liability Package Premium — $18,500
+could potentially apply to:
+D&O
+EPLI
+Fiduciary
+or another combination of coverages.
+Therefore:
+The number of premiums displayed must never be used to determine the number of coverage modules provided.
+CoverageIQ must not reason:
+“Only one premium exists, therefore only one coverage exists.”
+Likewise, CoverageIQ must not reason:
+“A Management Liability premium exists, therefore every Management Liability coverage is included.”
+A combined premium confirms only what the document affirmatively associates with that premium.
+When a package premium exists, CoverageIQ must continue searching for coverage-specific evidence such as:
+Limits
+Retentions
+Coverage selections
+Coverage schedules
+Insuring agreements
+Endorsements
+Sublimits
+Declarations
+Core Principle
+Premium structure and coverage structure must be evaluated independently.
+
+
+⸻
+
+
+9. Retention Handling
+Different coverage modules may have different retentions within the same policy.
+Example:
+D&O — $25,000 Retention
+EPLI — $50,000 Retention
+Fiduciary — $10,000 Retention
+These are strong indicators that multiple coverage modules may be provided.
+However, CoverageIQ should not assume coverage solely because a retention appears somewhere in a generic form.
+The retention must be reasonably associated with the applicable coverage module.
+
+
+⸻
+
+
+10. Negative Evidence
+CoverageIQ must actively search for evidence indicating that coverage is not provided.
+Examples:
+Not Purchased
+Not Covered
+Not Included
+Not Selected
+Declined
+N/A
+No Coverage
+$0 Limit
+Coverage Part Not Applicable
+Explicit negative evidence generally overrides incidental policy-form language.
+Example:
+EPLI — NOT PURCHASED
+combined with a later EPLI insuring agreement appearing in the generic policy form does not establish EPLI coverage.
+The correct classification is generally:
+EPLI → NOT_PRESENT
+unless contradictory affirmative evidence requires MANUAL_REVIEW.
+
+
+⸻
+
+
+11. Evidence Reconciliation
+CoverageIQ must evaluate the document as a whole.
+Do not classify coverage immediately upon encountering the first relevant term.
+Instead:
+Identify Evidence
+↓
+Record Evidence
+↓
+Continue Full-Document Review
+↓
+Identify Conflicting Evidence
+↓
+Reconcile Evidence
+↓
+Finalize Classification
+Later endorsements may modify, add, remove, or clarify coverage identified earlier in the document.
+
+
+⸻
+
+
+12. Conflict Handling
+If CoverageIQ finds conflicting evidence, it must not choose whichever evidence appears more persuasive without sufficient support.
+Example:
+Declarations:
+EPLI — Not Purchased
+Later endorsement:
+Employment Practices Liability Coverage Added
+CoverageIQ should investigate whether the endorsement affirmatively modifies the declarations.
+If the relationship cannot reliably be determined:
+🟡 MANUAL_REVIEW
+Provide both pieces of conflicting evidence.
+
+
+⸻
+
+
+13. Classification Status Logic
+Every coverage module must receive one of three classifications.
+🟢
+PRESENT
+Sufficient affirmative evidence establishes that the coverage is provided.
+CoverageIQ must cite the strongest evidence supporting the classification.
+
+
+⸻
+
+
+⚪
+NOT_PRESENT
+CoverageIQ has sufficient evidence that the coverage is not provided.
+Examples include:
+Explicitly marked Not Purchased
+Explicitly marked Not Covered
+Explicitly declined
+Complete coverage schedule clearly showing the module is not selected
+The absence of a keyword alone is not sufficient to establish NOT_PRESENT.
+
+
+⸻
+
+
+🟡
+MANUAL_REVIEW
+CoverageIQ cannot reliably determine whether coverage is provided.
+Examples:
+Conflicting evidence
+Ambiguous coverage schedule
+Coverage language exists but purchase cannot be established
+Limits cannot reliably be associated with coverage
+Missing declarations
+Missing endorsements
+Poor document quality
+Incomplete quote
+Conflicting endorsements
+Unclear package premium allocation
+CoverageIQ must explain why manual review is required.
+
+
+⸻
+
+
+14. Important Classification Guardrails
+CoverageIQ must never assume:
+Side A/B/C language → D&O is purchased
+Employment definitions → EPLI is purchased
+ERISA terminology → Fiduciary is purchased
+Employee Theft language → Crime is purchased
+Management Liability policy → all four modules are purchased
+One premium → one coverage
+Package premium → all available modules are purchased
+No evidence found → coverage definitely absent
+Classification must be based on the actual structure of the transaction reflected by the document.
+
+
+⸻
+
+
+15. Downstream Rule Gating
+Rule 000 controls which optimization modules execute.
+If D&O =
+PRESENT
+Execute:
+DO-001
+DO-002
+DO-003
+DO-004
+…and future D&O rules.
+If EPLI =
+PRESENT
+Execute:
+EP-001 onward.
+If Fiduciary =
+PRESENT
+Execute:
+FI-001 onward.
+If Crime =
+PRESENT
+Execute:
+CR-001 onward.
+If Coverage =
+NOT_PRESENT
+Do not execute that coverage’s optimization rules.
+If Coverage =
+MANUAL_REVIEW
+Do not silently treat the coverage as either present or absent.
+Flag the classification for broker review and suppress coverage-specific optimization conclusions that depend on a definitive classification unless administrator configuration expressly provides otherwise.
+
+
+⸻
+
+
+16. Required Output — Coverage Snapshot
+Rule 000 should produce a Coverage Snapshot before any optimization recommendations are displayed.
+Example:
+Coverage Snapshot
+🟢 Private Company D&O
+Status: PRESENT
+Limit: $2,000,000
+Retention: $25,000
+🟢 EPLI
+Status: PRESENT
+Limit: $1,000,000
+Retention: $50,000
+⚪ Fiduciary Liability
+Status: NOT_PRESENT
+🟢 Crime
+Status: PRESENT
+Employee Theft: $500,000
+Computer Fraud: $250,000
+
+
+⸻
+
+
+17. Evidence Requirements
+Every classification must provide supporting evidence.
+For each coverage module return:
+Coverage:
+Status: PRESENT / NOT_PRESENT / MANUAL_REVIEW
+Limit(s):
+Retention(s):
+Premium: Coverage-Specific / Combined / Not Identified
+Primary Evidence:
+Supporting Evidence:
+Negative Evidence:
+Page(s):
+Section / Endorsement:
+Relevant Language:
+Confidence: HIGH / MEDIUM / LOW
+If a combined premium is identified, CoverageIQ should report it as Combined rather than incorrectly allocating it among individual modules.
+
+
+⸻
+
+
+18. Confidence Requirements
+HIGH
+Strong affirmative or negative evidence clearly establishes classification.
+Example:
+Employment Practices Liability
+Limit: $1,000,000
+Retention: $50,000
+Coverage: Included
+MEDIUM
+Multiple supporting indicators strongly suggest classification, but direct evidence is less explicit.
+LOW
+Evidence is incomplete, ambiguous, or conflicting.
+Low-confidence classification should generally result in:
+MANUAL_REVIEW
+rather than a definitive conclusion.
+
+
+⸻
+
+
+19. Validation Checklist
+Before Rule 000 completes, CoverageIQ must verify:
+☑ Entire available document reviewed
+☑ D&O evaluated
+☑ EPLI evaluated
+☑ Fiduciary evaluated
+☑ Crime evaluated
+☑ Limits reviewed
+☑ Retentions reviewed
+☑ Premium structure reviewed
+☑ Combined premiums handled appropriately
+☑ Coverage schedules reviewed
+☑ Applicable endorsements reviewed
+☑ Negative coverage indicators reviewed
+☑ Conflicting evidence reconciled
+☑ Evidence captured for each classification
+☑ Confidence assigned
+☑ Applicable downstream modules selected
+Only after completing this process may CoverageIQ proceed to optimization analysis.
+
+
+⸻
+
+
+RULE-000 Core Instruction
+If I had to give the agent one overriding instruction, it would be:
+Review the entire document and determine what coverage was actually purchased or provided. Do not classify coverage merely because corresponding policy language exists. Evaluate limits, retentions, premiums, coverage selections, declarations, schedules, insuring agreements, endorsements, exclusions, and other evidence together. A single combined premium may apply to multiple coverage modules and must never be interpreted as evidence that only one coverage exists. When evidence is insufficient or conflicting, return MANUAL_REVIEW rather than guessing.
+I think Rule 000 is now strong enough to serve as the gatekeeper for the entire CoverageIQ system. The next thing I’d eventually want to do is stress-test it against maybe 10–20 actual carrier quotes/policies—especially modular management liability products—because that’s where we’ll discover carrier-specific classification edge cases we haven’t anticipated yet.
