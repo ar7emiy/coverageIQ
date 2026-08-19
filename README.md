@@ -80,12 +80,14 @@ provides) plus `DO-001` through `DO-004`. Each rule lives in its own
 Skills format: YAML frontmatter (`name` matching the folder, `description`
 as a trigger condition) followed by markdown instructions — Copilot
 identifies each skill by that frontmatter, not by filename, since every
-file is literally named `SKILL.md`. `skills/AGENT_SYSTEM_INSTRUCTIONS.md`
-is the draft system prompt for the M365 Copilot agent — folder paths,
-numbering, atomic-write requirement, the RULE-000 → rule-family gating table
-(D&O=PRESENT unlocks `DO-*`, EPLI=PRESENT unlocks `EP-*`, etc.), and the
-exact markdown output format for both the Coverage Snapshot and per-rule
-sections.
+file is literally named `SKILL.md`. `skills/AGENT_SYSTEM_INSTRUCTIONS.md` is
+the actual system prompt to paste into the Copilot agent — deliberately
+lean: the RULE-000 → skill-family gating table (D&O=PRESENT unlocks
+`DO-*`, EPLI=PRESENT unlocks `EP-*`, etc.), the exact markdown output
+format, the output filename convention, and the destination Folder ID
+placeholder. It intentionally says nothing about *why* — no backend/POC
+details, no repo layout, no mention of this UI or its polling — since the
+agent doesn't need or use that context, only this repo's other docs do.
 
 ## The analysis `.md` → coverage + flags parser (read before touching flag data)
 

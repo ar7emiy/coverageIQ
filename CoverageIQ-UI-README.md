@@ -20,10 +20,12 @@ This interface is a **passive results viewer**. It never touches the PDF directl
 > manually (already correctly named `{prefix}_{filename}.pdf`) instead of
 > Copilot doing it. Steps 3–4 and everything else in this doc are
 > unaffected — the UI still just watches the two folders and has no idea
-> whether the file arrived by hand or automatically. See
-> `skills/AGENT_SYSTEM_INSTRUCTIONS.md`'s "Input handling" section for what
-> this changes on the agent side. This is scoped to the POC and expected to
-> revert once the underlying copy issue is resolved.
+> whether the file arrived by hand or automatically. The agent itself
+> (`skills/AGENT_SYSTEM_INSTRUCTIONS.md`) doesn't need to know any of this
+> — it's just handed a PDF, a prefix/filename, and a destination Folder ID,
+> and has no visibility into how or where the PDF originated. This is
+> scoped to the POC and expected to revert once the underlying copy issue
+> is resolved.
 
 ## 3. Screen real estate
 
