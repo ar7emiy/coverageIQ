@@ -166,3 +166,14 @@ reference only — neither is used anymore:
 - **File-watcher vs. polling**: polling was chosen as the simpler POC build
   (README section 9 leaves this open); the interval lives in
   `server/config.js`.
+- **TODO — evidence highlighting in the PDF pane**: clicking a flag should
+  jump to and highlight the exact source text in the rendered PDF (and
+  ideally the reverse). Needs real PDF.js rendering (currently missing
+  entirely) plus, per page, a fuzzy/normalized text search matching each
+  Evidence quote against PDF.js's text-layer coordinates to get a
+  highlightable bounding box — exact-string matching won't hold up since
+  LLM-transcribed quotes drift slightly from source (smart quotes,
+  collapsed whitespace, line-break hyphenation). Scanned/image-only PDFs
+  are the open risk: no text layer to search without OCR first. Suggested
+  first step: prototype against the two hardcoded sample PDFs/evidence
+  before generalizing to arbitrary submissions.
