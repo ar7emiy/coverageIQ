@@ -41,7 +41,7 @@ one.
 **Rule ID prefix matters.** The `RULE-000` skill (Coverage Classification)
 runs first and classifies which coverage modules the document actually
 provides, then gates which other rules are even allowed to execute — by
-matching each rule's ID prefix to a module: `DO-*` → D&O, `EP-*` → EPLI,
+matching each rule's ID prefix to a module: `DO-*` → D&O, `EPLI-*` → EPLI,
 `FI-*` → Fiduciary, `CR-*` → Crime. Give every rule you write an ID in the
 matching family or RULE-000's gating won't route to it.
 

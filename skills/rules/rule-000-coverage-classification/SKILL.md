@@ -1,6 +1,6 @@
 ---
 name: rule-000-coverage-classification
-description: Classifies whether the uploaded policy or quote provides Private Company D&O, EPLI, Fiduciary Liability, and/or Crime coverage. Use first, before any other CoverageIQ rule, on every document — its PRESENT/NOT_PRESENT/MANUAL_REVIEW classification determines which other rule families (DO-*, EP-*, FI-*, CR-*) are allowed to execute.
+description: Classifies whether the uploaded policy or quote provides Private Company D&O, EPLI, Fiduciary Liability, and/or Crime coverage. Use first, before any other CoverageIQ rule, on every document — its PRESENT/NOT_PRESENT/MANUAL_REVIEW classification determines which other rule families (DO-*, EPLI-*, FI-*, CR-*) are allowed to execute.
 ---
 
 # RULE-000 — Coverage Classification
@@ -19,7 +19,7 @@ gates which other rules are even allowed to run. It gets its own structure.
 `Pre-Analysis / Coverage Classification`
 
 ## Execution Priority
-**FIRST — MANDATORY.** Every other rule (`DO-*`, `EP-*`, `FI-*`, `CR-*`, and
+**FIRST — MANDATORY.** Every other rule (`DO-*`, `EPLI-*`, `FI-*`, `CR-*`, and
 any future family) runs only after RULE-000 has produced a final
 classification. See "Downstream rule gating" below and
 `skills/AGENT_SYSTEM_INSTRUCTIONS.md`.
@@ -184,7 +184,7 @@ all:
 | Module classification | Rules executed |
 |---|---|
 | D&O = PRESENT | `DO-*` (DO-001, DO-002, DO-003, DO-004, and future D&O rules) |
-| EPLI = PRESENT | `EP-*` |
+| EPLI = PRESENT | `EPLI-*` |
 | Fiduciary = PRESENT | `FI-*` |
 | Crime = PRESENT | `CR-*` |
 | Any module = NOT_PRESENT | that module's rule family does not execute at all — no sections are produced for it |

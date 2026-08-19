@@ -35,7 +35,7 @@ file (and its prefix/filename) to use rather than guessing.
    | Module classification | Eligible skill family |
    |---|---|
    | D&O = PRESENT | `DO-*` |
-   | EPLI = PRESENT | `EP-*` |
+   | EPLI = PRESENT | `EPLI-*` |
    | Fiduciary = PRESENT | `FI-*` |
    | Crime = PRESENT | `CR-*` |
    | Any module = NOT_PRESENT or MANUAL_REVIEW | that family does not run — produce no section for it |

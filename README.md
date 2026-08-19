@@ -75,7 +75,10 @@ within a few seconds (polling interval is `POLL_INTERVAL_MS` in
 intent, search guidance, and PASS/OPTIMIZATION/MANUAL_REVIEW decision logic.
 `skills/rules/` holds the current filled-out rules — `RULE-000` (mandatory,
 always runs first, classifies which coverage modules the document actually
-provides) plus `DO-001` through `DO-004`. Each rule lives in its own
+provides), `DO-001` through `DO-008` (Private Company D&O), and `EPLI-001`
+through `EPLI-005` (Employment Practices Liability — the first non-D&O
+family; RULE-000 only unlocks these when it classifies EPLI as PRESENT).
+Each rule lives in its own
 `skills/rules/<rule-slug>/SKILL.md`, conforming to Copilot Cowork's Agent
 Skills format: YAML frontmatter (`name` matching the folder, `description`
 as a trigger condition) followed by markdown instructions — Copilot
@@ -83,7 +86,7 @@ identifies each skill by that frontmatter, not by filename, since every
 file is literally named `SKILL.md`. `skills/AGENT_SYSTEM_INSTRUCTIONS.md` is
 the actual system prompt to paste into the Copilot agent — deliberately
 lean: the RULE-000 → skill-family gating table (D&O=PRESENT unlocks
-`DO-*`, EPLI=PRESENT unlocks `EP-*`, etc.), the exact markdown output
+`DO-*`, EPLI=PRESENT unlocks `EPLI-*`, etc.), the exact markdown output
 format, the output filename convention, and Input/Destination Folder ID
 placeholders (the prefix/filename come from the PDF's real name in the
 Input Folder, never a chat attachment's auto-renamed copy — see that
