@@ -22,10 +22,11 @@ This interface is a **passive results viewer**. It never touches the PDF directl
 > unaffected — the UI still just watches the two folders and has no idea
 > whether the file arrived by hand or automatically. The agent itself
 > (`skills/AGENT_SYSTEM_INSTRUCTIONS.md`) doesn't need to know any of this
-> — it's just handed an Input Folder ID and a Destination Folder ID, looks
-> up the PDF's real (already-correctly-named) filename in the input
-> folder itself, and has no idea *why* the workflow is shaped this way.
-> This is scoped to the POC and expected to revert once the underlying
+> — it's just handed a Destination Folder ID and whatever copy of the PDF
+> it's attached in chat, and pulls the prefix from the leading digits of
+> that attachment's filename (ignoring anything Copilot's upload may have
+> appended after it). It has no idea *why* the workflow is shaped this
+> way. This is scoped to the POC and expected to revert once the underlying
 > copy issue
 > is resolved.
 

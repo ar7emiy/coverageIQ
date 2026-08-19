@@ -87,11 +87,12 @@ file is literally named `SKILL.md`. `skills/AGENT_SYSTEM_INSTRUCTIONS.md` is
 the actual system prompt to paste into the Copilot agent — deliberately
 lean: the RULE-000 → skill-family gating table (D&O=PRESENT unlocks
 `DO-*`, EPLI=PRESENT unlocks `EPLI-*`, etc.), the exact markdown output
-format, the output filename convention, and Input/Destination Folder ID
-placeholders (the prefix/filename come from the PDF's real name in the
-Input Folder, never a chat attachment's auto-renamed copy — see that
-file's opening warning). It intentionally says nothing about *why* — no
-backend/POC
+format, the output filename convention, and a Destination Folder ID
+placeholder. The prefix is extracted from the leading digits of whatever
+filename the agent sees — the pairing logic only ever keys on the prefix,
+never the full filename, so a suffix Copilot's upload may append doesn't
+matter (see that file's opening warning). It intentionally says nothing
+about *why* — no backend/POC
 details, no repo layout, no mention of this UI or its polling — since the
 agent doesn't need or use that context, only this repo's other docs do.
 
