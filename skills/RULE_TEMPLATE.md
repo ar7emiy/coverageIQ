@@ -115,10 +115,13 @@ explanation.
 
 ## Evidence & confidence requirements
 Every result must cite the relevant policy/quote language it relied on
-(quoted, not paraphrased), and a confidence level (High / Medium / Low).
-When a rule needs to cite more than one distinct passage (e.g. "where the
-exclusion lives" and "where the carve-back lives"), give each its own
-Evidence entry — optionally labeled to disambiguate them (see
+(quoted, not paraphrased), **the page number it was found on**, and a
+confidence level (High / Medium / Low). Page number is required for every
+quote — use `(Page unknown)` rather than omitting it if the document's
+pages aren't reliably numbered or determinable; never guess. When a rule
+needs to cite more than one distinct passage (e.g. "where the exclusion
+lives" and "where the carve-back lives"), give each its own Evidence
+entry — optionally labeled to disambiguate them (see
 AGENT_SYSTEM_INSTRUCTIONS.md's `Evidence (Label):` syntax).
 
 ## Notes

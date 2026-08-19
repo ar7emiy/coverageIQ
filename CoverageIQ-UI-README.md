@@ -15,6 +15,16 @@ This interface is a **passive results viewer**. It never touches the PDF directl
 3. This UI polls both folders, detects a complete pair, and displays the results.
 4. The user reads the flagged suggestions — no upload, no paste, no manual step on this side of the screen.
 
+> **Current POC deviation:** step 2's automatic copy into `/input` has been
+> unreliable in testing, so for now a person places the PDF into `/input`
+> manually (already correctly named `{prefix}_{filename}.pdf`) instead of
+> Copilot doing it. Steps 3–4 and everything else in this doc are
+> unaffected — the UI still just watches the two folders and has no idea
+> whether the file arrived by hand or automatically. See
+> `skills/AGENT_SYSTEM_INSTRUCTIONS.md`'s "Input handling" section for what
+> this changes on the agent side. This is scoped to the POC and expected to
+> revert once the underlying copy issue is resolved.
+
 ## 3. Screen real estate
 
 Copilot reserves a fixed 300–400px pane. This UI gets **whatever space remains**, which is usually the majority of the viewport — not a narrow sidebar. It needs to be genuinely responsive (fluid grid/columns), not designed for one fixed width and stretched.
