@@ -156,9 +156,11 @@
   .ev-mono.suggested{ background:var(--green-bg); color:#1F4A38; }
   .ev-text{ font-size:12.5px; line-height:1.55; color:var(--slate); }
 
-  /* coverage snapshot — one panel per present/needs-review module, not a
-     4-up grid, since a single upload represents one (occasionally two)
-     coverage(s), not four independent yes/no slots. */
+  /* coverage snapshot — always all four modules, since a single upload may
+     be a combined Management Liability document covering anywhere from
+     one to four of them; each row shows its actual status explicitly
+     (Present / Not Present / Manual Review) rather than hiding the ones
+     that aren't present. */
   .coverage-snapshot-label{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
     color:var(--slate-2); margin-bottom:8px; }
   .coverage-panel{ display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--line);
@@ -170,6 +172,10 @@
   .coverage-panel.status-manual-review .coverage-panel-dot{ background:var(--amber); }
   .coverage-panel-name{ font-family:var(--font-display); font-size:13.5px; font-weight:600; }
   .coverage-panel-detail{ font-family:var(--font-mono); font-size:11px; color:var(--slate); margin-top:2px; }
+  .coverage-panel-status{ font-family:var(--font-mono); font-size:10px; font-weight:500; margin-left:auto; flex-shrink:0; padding-left:10px; }
+  .coverage-panel.status-present .coverage-panel-status{ color:var(--green); }
+  .coverage-panel.status-not-present .coverage-panel-status{ color:var(--slate-2); }
+  .coverage-panel.status-manual-review .coverage-panel-status{ color:var(--amber); }
 
   /* pdf pane */
   .pdf-pane{
@@ -542,6 +548,7 @@ document.getElementById('enterBtn').addEventListener('click', async () => {
    ============================================================ */
 const POLL_INTERVAL_MS = 3000;
 const badgeLabel = { 'optimization':'Optimization', 'manual-review':'Manual Review', 'pass':'Pass' };
+const coverageStatusLabel = { 'present':'Present', 'not-present':'Not Present', 'manual-review':'Manual Review' };
 
 let submissions = [];
 let detailCache = {};
@@ -617,48 +624,29 @@ function renderMenu(){
   fileBtnLabel.textContent = current ? current.filename : 'No completed reviews yet';
 }
 
-// A single upload is one document, so it represents one coverage (or,
-// occasionally, more than one for a combined Management Liability
-// document) — not four independent yes/no slots. Show only what's
-// actually present (plus anything RULE-000 couldn't confidently classify),
-// one row each, rather than a 4-up grid listing every module regardless
-// of relevance.
+// A single upload may be a combined Management Liability document, so it
+// can cover anywhere from one to all four modules — always show all four,
+// each with its actual status, rather than hiding the ones that aren't
+// present. RULE-000 always classifies all four regardless of what's
+// displayed; this is purely a rendering choice.
 function buildCoverageSnapshot(coverage){
   const wrap = document.createElement('div');
   wrap.className = 'coverage-snapshot';
 
-  const present = (coverage || []).filter(c => c.status === 'present');
-  const review = (coverage || []).filter(c => c.status === 'manual-review');
-
-  if (!present.length && !review.length){
-    wrap.innerHTML = `
-      <div class="coverage-snapshot-label">Coverage</div>
-      <div class="coverage-panel status-not-present">
-        <span class="coverage-panel-dot"></span>
-        <div class="coverage-panel-name">No coverage identified</div>
-      </div>`;
-    return wrap;
-  }
-
-  const presentRows = present.map(c => {
+  const rows = (coverage || []).map(c => {
     const details = [c.limit, c.retention ? `${c.retention} retention` : null].filter(Boolean).join(' · ');
     return `
-      <div class="coverage-panel status-present">
+      <div class="coverage-panel status-${c.status}">
         <span class="coverage-panel-dot"></span>
         <div>
           <div class="coverage-panel-name">${c.module}</div>
           ${details ? `<div class="coverage-panel-detail">${details}</div>` : ''}
         </div>
+        <span class="coverage-panel-status">${coverageStatusLabel[c.status] || c.status}</span>
       </div>`;
   }).join('');
 
-  const reviewRows = review.map(c => `
-    <div class="coverage-panel status-manual-review">
-      <span class="coverage-panel-dot"></span>
-      <div class="coverage-panel-name">${c.module} — needs manual review</div>
-    </div>`).join('');
-
-  wrap.innerHTML = `<div class="coverage-snapshot-label">Coverage</div>${presentRows}${reviewRows}`;
+  wrap.innerHTML = `<div class="coverage-snapshot-label">Coverage</div>${rows}`;
   return wrap;
 }
 
