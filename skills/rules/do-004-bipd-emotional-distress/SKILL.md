@@ -1,4 +1,9 @@
-# Skill Rule Template
+---
+name: do-004-bipd-emotional-distress
+description: Checks whether a Private Company D&O policy's Bodily Injury/Property Damage exclusion preserves coverage for emotional distress claims via a carve-back. Use when D&O coverage has been classified PRESENT by RULE-000, to flag a BI/PD exclusion with no emotional distress exception.
+---
+
+# DO-004 — BI/PD Exclusion / Emotional Distress Carve-Back
 
 ## Rule ID
 `DO-004`

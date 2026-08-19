@@ -1,4 +1,9 @@
-# Skill Rule Template
+---
+name: do-001-additional-side-a-coverage
+description: Checks whether a Private Company D&O policy or quote provides Additional Side A coverage of at least $1,000,000. Use when D&O coverage has been classified PRESENT by RULE-000, to flag missing or insufficient dedicated Side A limits.
+---
+
+# DO-001 — Additional Side A Coverage
 
 ## Rule ID
 `DO-001`

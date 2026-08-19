@@ -1,4 +1,9 @@
-# Skill Rule Template
+---
+name: do-002-ivi-bankruptcy-carveback
+description: Checks whether a Private Company D&O policy's Insured vs. Insured exclusion contains a bankruptcy trustee/receiver/creditors'-committee carve-back. Use when D&O coverage has been classified PRESENT by RULE-000, to flag a missing or absent carve-back.
+---
+
+# DO-002 — Insured vs. Insured / Bankruptcy Carve-Back
 
 ## Rule ID
 `DO-002`

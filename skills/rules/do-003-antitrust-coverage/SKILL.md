@@ -1,4 +1,9 @@
-# Skill Rule Template
+---
+name: do-003-antitrust-coverage
+description: Checks whether a Private Company D&O policy's Antitrust Exclusion is restored by a carve-back, sublimit, defense-cost coverage, or full-limit coverage. Use when D&O coverage has been classified PRESENT by RULE-000, to flag an exclusion left without any coverage restoration.
+---
+
+# DO-003 — Antitrust Coverage
 
 ## Rule ID
 `DO-003`

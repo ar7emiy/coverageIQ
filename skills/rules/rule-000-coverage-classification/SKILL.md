@@ -1,3 +1,8 @@
+---
+name: rule-000-coverage-classification
+description: Classifies whether the uploaded policy or quote provides Private Company D&O, EPLI, Fiduciary Liability, and/or Crime coverage. Use first, before any other CoverageIQ rule, on every document — its PRESENT/NOT_PRESENT/MANUAL_REVIEW classification determines which other rule families (DO-*, EP-*, FI-*, CR-*) are allowed to execute.
+---
+
 # RULE-000 — Coverage Classification
 
 This rule doesn't fit `RULE_TEMPLATE.md`'s single PASS/OPTIMIZATION/

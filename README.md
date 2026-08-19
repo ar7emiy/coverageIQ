@@ -2,31 +2,53 @@
 
 This is the working implementation of the UI described in
 [CoverageIQ-UI-README.md](CoverageIQ-UI-README.md) and prototyped in
-`coverageiq-mockup-v4.html`. Plain Node.js — no npm install required.
+`coverageiq-mockup-v4.html`. Two interchangeable backends, same behavior,
+same `public/` frontend — pick whichever runtime is available on the
+machine.
 
-## Run it
+## Run it — Node
 
 ```
 node server/server.js
 ```
 
+No `npm install` needed — zero dependencies.
+
+## Run it — Python (if Node isn't an option)
+
+```
+python server-python/server.py
+```
+
+Standard library only — no `pip install` needed either.
+[server-python/](server-python/) is a line-for-line port of `server/`
+(same `config.py`/`file_scanner.py`/`parse_analysis.py`/`server.py` split,
+same swappable-folder-path pattern in `config.py`) verified to return
+byte-identical JSON to the Node version against the same test data.
+
+## Either way
+
 Then open http://localhost:5175. By default it watches
 `test_coverageIQ_data/input/` and `test_coverageIQ_data/output/`, which
-already contain one sample pair (prefix `004`) so you can see it working
-immediately.
+already contain two sample pairs (prefixes `004` and `005`) so you can see
+it working immediately.
 
 ## Switching from test data to the real folders
 
-[server/config.js](server/config.js) has two `module.exports` blocks: the
-active one (test data) and a commented-out one below it pointing at the real
-OneDrive folders. To switch: comment out the first block, uncomment the
-second block.
+[server/config.js](server/config.js) (Node) / [server-python/config.py](server-python/config.py)
+(Python) each have the active `INPUT_DIR`/`OUTPUT_DIR` assignment (test
+data) plus a commented-out block below it pointing at the real OneDrive
+folders. To switch: comment out the active assignment, uncomment the real
+one. Same swap, same env-var override, in whichever one you're running.
 
 Alternatively, leave the file alone entirely and pass env vars instead —
-this overrides the test-data default without touching config.js:
+this overrides the test-data default without touching config.js/config.py
+(same two env var names in both). In PowerShell:
 
-```
-COVERAGEIQ_INPUT_DIR="C:\Users\smkenney\OneDrive\coverageIQ_AI\input" COVERAGEIQ_OUTPUT_DIR="C:\Users\smkenney\OneDrive\coverageIQ_AI\output" node server/server.js
+```powershell
+$env:COVERAGEIQ_INPUT_DIR = "C:\Users\smkenney\OneDrive\coverageIQ_AI\input"
+$env:COVERAGEIQ_OUTPUT_DIR = "C:\Users\smkenney\OneDrive\coverageIQ_AI\output"
+node server/server.js          # or: python server-python/server.py
 ```
 
 ## Naming convention & pairing
@@ -53,7 +75,12 @@ within a few seconds (polling interval is `POLL_INTERVAL_MS` in
 intent, search guidance, and PASS/OPTIMIZATION/MANUAL_REVIEW decision logic.
 `skills/rules/` holds the current filled-out rules — `RULE-000` (mandatory,
 always runs first, classifies which coverage modules the document actually
-provides) plus `DO-001` through `DO-004`. `skills/AGENT_SYSTEM_INSTRUCTIONS.md`
+provides) plus `DO-001` through `DO-004`. Each rule lives in its own
+`skills/rules/<rule-slug>/SKILL.md`, conforming to Copilot Cowork's Agent
+Skills format: YAML frontmatter (`name` matching the folder, `description`
+as a trigger condition) followed by markdown instructions — Copilot
+identifies each skill by that frontmatter, not by filename, since every
+file is literally named `SKILL.md`. `skills/AGENT_SYSTEM_INSTRUCTIONS.md`
 is the draft system prompt for the M365 Copilot agent — folder paths,
 numbering, atomic-write requirement, the RULE-000 → rule-family gating table
 (D&O=PRESENT unlocks `DO-*`, EPLI=PRESENT unlocks `EP-*`, etc.), and the
@@ -62,12 +89,13 @@ sections.
 
 ## The analysis `.md` → coverage + flags parser (read before touching flag data)
 
-`server/parseAnalysis.js` is a single, isolated, heavily-commented module
-that turns an analysis `.md` file's text into what the UI renders. It is
-intentionally the **only** place in the app that knows the markdown
-structure — `server/server.js` just calls `parseAnalysisMarkdown(text)` and
-forwards the result as JSON; `public/index.html` just renders whatever it
-receives.
+`server/parseAnalysis.js` (Node) / `server-python/parse_analysis.py`
+(Python, a direct port — keep them in sync if this changes) is a single,
+isolated, heavily-commented module that turns an analysis `.md` file's text
+into what the UI renders. It is intentionally the **only** place in the app
+that knows the markdown structure — `server.js`/`server.py` just calls
+`parse_analysis_markdown(text)` and forwards the result as JSON;
+`public/index.html` just renders whatever it receives.
 
 The file always starts with one mandatory `RULE-000` section (parsed into
 `coverage`, rendered as the **Coverage Snapshot panel** at the top of the
