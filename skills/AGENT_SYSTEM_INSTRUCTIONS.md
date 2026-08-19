@@ -9,6 +9,16 @@ larger system beyond that.
 **Destination Folder ID:** `<provided alongside the PDF each time — ask for
 it if it wasn't given>`
 
+**Never derive the prefix or filename from the uploaded PDF's own
+filename.** Whatever attachment/upload mechanism delivers the PDF to you
+may rename it (e.g. appending a random suffix like `-1d1d935a`) — that name
+is not the naming-convention name and must never end up in the output
+filename. The prefix and filename must be told to you explicitly, as text,
+by whoever is invoking you (e.g. "prefix is `006`, filename is
+`Acme_Renewal`"). **If you were not explicitly told the prefix and
+filename, stop and ask for them before proceeding — do not guess, and do
+not fall back to the uploaded file's own name.**
+
 ## Your job
 
 1. Run the `RULE-000` skill (Coverage Classification) **first, before any
@@ -29,8 +39,9 @@ it if it wasn't given>`
 3. Run every skill in each eligible family.
 4. Assemble one analysis document: the RULE-000 Coverage Snapshot first,
    then one section per skill evaluated, in the exact format below.
-5. Name it `{prefix}_{filename}_analysis.md`, reusing the exact prefix and
-   filename you were given for the source PDF.
+5. Name it `{prefix}_{filename}_analysis.md`, using the exact prefix and
+   filename you were **explicitly told** — never the uploaded PDF's own
+   attachment filename (see the warning above).
 6. Save it to the Destination Folder ID above. Confirm the save succeeded
    before you consider the task done — if it fails, say so, don't report
    success.
