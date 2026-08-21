@@ -30,18 +30,23 @@ MANUAL_REVIEW, per the logic below), not silently skipped.
 ## Search concepts / terminology
 **Step 1 — locate the IVI provision.** Review the entire policy or quote,
 including applicable endorsements, for language functioning as an Insured
-vs. Insured exclusion. Search semantically for concepts including:
+vs. Insured exclusion. It is rarely titled exactly "Insured vs. Insured" —
+it's frequently just one numbered item within a longer, generically titled
+"Exclusions" section. Search semantically for concepts including:
 - Insured vs. Insured / Insured versus Insured / Insured v. Insured / IVI
-- Insured against Insured
-- Claims brought by an Insured
+- Insured against Insured / Entity vs. Insured / Company vs. Insured Person
+- Insured Capacity Exclusion / Related Claims among Insureds
+- Claims brought by an Insured, or by or on behalf of the Company
 - Claims brought or maintained by an Insured Person
-- Claims brought by or on behalf of the Company
 - Claims by one Insured against another Insured
-- Claims brought at the direction or solicitation of an Insured
+- Claims brought, assisted, or solicited by, or on behalf of, an Insured
+- Claims "at the direction, request, or solicitation of" any Insured
 - Materially equivalent language restricting claims between insured parties
 
 Do not rely solely on the title of the exclusion — determine whether a
-provision substantively functions as an IVI exclusion.
+provision substantively functions as an IVI exclusion. It may appear as
+one clause inside a long, unlabeled list of numbered exclusions rather than
+its own captioned section.
 
 **Step 2 — if IVI cannot be located,** see the OPTIMIZATION / MANUAL_REVIEW
 logic below (do not proceed to Step 3).
@@ -49,16 +54,28 @@ logic below (do not proceed to Step 3).
 **Step 3 — analyze bankruptcy carve-backs.** When an IVI provision is
 identified, review it and all endorsements modifying it for bankruptcy-
 related exceptions. Search for carve-backs involving:
-- Bankruptcy Trustee / Trustee
-- Receiver
+- Bankruptcy Trustee / Trustee / Trustee in Bankruptcy
+- Receiver / Receivership
 - Examiner
-- Creditors' Committee / Committee of Creditors
+- Creditors' Committee / Committee of Creditors / Official Committee of
+  Unsecured Creditors
+- Debtor in Possession / DIP
+- Liquidator / Conservator / Rehabilitator
 - Similar bankruptcy, insolvency, liquidation, or court-appointed
   representative
+- "Derivative Suit Exception" language, when it specifically preserves
+  claims brought by such a representative rather than by a shareholder
 
-The language must actually operate as an exception/carve-back to the IVI
-exclusion — merely finding one of these terms elsewhere in the document does
-not satisfy the rule.
+The carve-back is typically phrased as an exception nested *within* the IVI
+exclusion itself (e.g. "...except a Claim brought by a bankruptcy trustee,
+receiver, conservator, or similar official appointed to take control of,
+supervise, manage, or liquidate the Company..."), sometimes with a further
+qualifier that the trustee acts "without the solicitation, assistance, or
+active participation of" an Insured — note that qualifier if present, since
+it narrows but does not eliminate the carve-back. The language must
+actually operate as an exception/carve-back to the IVI exclusion — merely
+finding one of these terms elsewhere in the document does not satisfy the
+rule.
 
 ## Decision steps
 1. Locate the IVI provision (Step 1). If not found or not reliably

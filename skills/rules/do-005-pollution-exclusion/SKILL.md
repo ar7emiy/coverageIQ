@@ -27,20 +27,40 @@ and determine whether one applies to the D&O coverage.
 ## Search concepts / terminology
 Search semantically for: Pollution / Pollutants / Pollution Exclusion /
 Contamination / Contaminants / Discharge / Dispersal / Seepage / Migration
-/ Release or Escape / Environmental Damage / Hazardous Substances / Toxic
-Chemicals / Waste / similar environmental or pollution-related
-exclusionary language. Do not require the provision to literally be titled
-"Pollution Exclusion." The identified language must actually operate to
-exclude or restrict D&O coverage — the mere appearance of "pollution"
-elsewhere in the document does not establish an applicable exclusion.
+/ Release or Escape / Environmental Damage / Environmental Impairment /
+Hazardous Substances / Toxic Chemicals / Toxic Materials / Waste / Asbestos
+/ Lead / Mold / Fungus / Electromagnetic Field (some carriers bundle this
+in) / similar environmental or pollution-related exclusionary language.
+Also recognize references to underlying environmental statutes used as
+shorthand for the same exclusion: CERCLA / Superfund / RCRA / Clean Air Act
+/ Clean Water Act / Comprehensive Environmental Response, Compensation, and
+Liability Act. Do not require the provision to literally be titled
+"Pollution Exclusion" — it is frequently one numbered item within a longer,
+generically titled exclusions list.
+
+**Absolute vs. qualified exclusions:** note whether the exclusion is
+labeled or functions as an "Absolute Pollution Exclusion" (no exceptions)
+versus a narrower/qualified version — this affects what kind of carve-back
+would actually restore coverage. Common carve-back mechanisms worth
+recognizing even without the word "pollution" in their own title: a
+Securities Claim carve-back ("this exclusion does not apply to a
+Securities Claim"), an Employment Practices carve-back, or a Non-Monetary
+Relief/Defense Costs-only exception.
+
+The identified language must actually operate to exclude or restrict D&O
+coverage — the mere appearance of "pollution" elsewhere in the document
+does not establish an applicable exclusion.
 
 ## Decision steps
 1. Locate a Pollution Exclusion (or materially equivalent) that operates
-   against the D&O coverage.
-2. If found, review the entire document for endorsements that delete,
-   replace, modify, or otherwise alter the exclusion.
+   against the D&O coverage — checking the full exclusions list, not just
+   provisions captioned "Pollution."
+2. If found, review the entire document for endorsements or in-line
+   carve-backs (Securities Claim, Employment Practices, Defense Costs, or
+   similar exceptions) that delete, replace, modify, or narrow the
+   exclusion.
 3. Determine whether the exclusion remains operative after accounting for
-   any such endorsements.
+   any such endorsements or carve-backs.
 
 ---
 

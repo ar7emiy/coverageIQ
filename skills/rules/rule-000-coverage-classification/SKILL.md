@@ -65,15 +65,27 @@ coverage schedules.
 
 **Fiduciary Liability** — Fiduciary Liability, Fiduciary Liability
 Insurance, Fiduciary Coverage, ERISA Fiduciary Liability, Employee Benefit
-Plan Fiduciary Liability, Benefit Plan Fiduciary Liability, Fiduciary
-Wrongful Act. Also evaluate coverage-specific limits, premiums, retentions,
-insuring agreements, endorsements, coverage parts.
+Plan Fiduciary Liability, Benefit Plan Fiduciary Liability, Pension Trust
+Liability, Fiduciary Wrongful Act. Also evaluate coverage-specific limits,
+premiums, retentions, insuring agreements, endorsements, coverage parts.
 
 **Crime** — Crime, Commercial Crime, Crime Coverage, Crime Insurance,
-Fidelity, Employee Theft, Employee Dishonesty, Computer Fraud, Funds
-Transfer Fraud, Forgery or Alteration. Crime may consist of multiple
-separately scheduled insuring agreements, limits, or sublimits — structured
-differently from D&O/EPLI/Fiduciary.
+Fidelity, Fidelity Bond, Employee Theft, Employee Dishonesty, Computer
+Fraud, Funds Transfer Fraud, Social Engineering Fraud, Fraudulent
+Instruction, Money and Securities (a classic coverage-part name that
+implies Crime even without the word "crime" appearing), Forgery or
+Alteration. Crime may consist of multiple separately scheduled insuring
+agreements, limits, or sublimits — structured differently from
+D&O/EPLI/Fiduciary.
+
+**Recognize the module by its economic function, not just its label** —
+the same discipline described in `skills/AGENT_SYSTEM_INSTRUCTIONS.md`'s
+"Read policies like an underwriter, not a keyword matcher" applies here
+too. A modular management-liability form may bury a module's insuring
+agreement under a generic "Coverage Part C" heading with the real module
+name only appearing on the declarations schedule — don't let the absence
+of a module's common name near its insuring agreement be mistaken for the
+module's absence.
 
 ## Evidence collection & hierarchy
 Collect affirmative, negative, and supporting evidence for each module

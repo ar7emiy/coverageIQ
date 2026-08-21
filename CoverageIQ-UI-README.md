@@ -12,7 +12,7 @@ This interface is a **passive results viewer**. It never touches the PDF directl
 
 1. User drops a policy PDF into the M365 Copilot agent (Copilot occupies a fixed ~300–400px pane, typically docked to the left of this UI).
 2. An MCP tool running under that Copilot agent copies the PDF into `/input` and, once skill-based analysis finishes, writes the results into `/output`.
-3. This UI polls both folders, detects a complete pair, and displays the results.
+3. This UI polls both folders and displays whatever it finds for the selected submission — flags once the analysis lands, an "analysis pending" state before that.
 4. The user reads the flagged suggestions — no upload, no paste, no manual step on this side of the screen.
 
 > **Current POC deviation:** step 2's automatic copy into `/input` has been
@@ -34,22 +34,25 @@ This interface is a **passive results viewer**. It never touches the PDF directl
 
 Copilot reserves a fixed 300–400px pane. This UI gets **whatever space remains**, which is usually the majority of the viewport — not a narrow sidebar. It needs to be genuinely responsive (fluid grid/columns), not designed for one fixed width and stretched.
 
-## 4. Data model & the input/output gating rule
+## 4. Data model & the input/output pairing rule
 
 - Files land in `/input`, optionally renamed with a running numeric prefix (e.g. `004_...`).
 - Skill analysis results land in `/output` as a matching `{prefix}_..._results` file.
-- **A submission only counts as valid once both files exist.** There is no partial or "analyzing" display state for a single submission — a pair is either complete or it isn't.
-- Incomplete pairs (input with no matching output, or vice versa) are **never shown in the main content area**. They only appear in the file-selection dropdown, grayed out and marked with a red warning icon stating which file is missing ("Missing output file" / "Missing input file"). They are not selectable.
-- "Latest" is determined by the highest prefix number among **complete** pairs.
+- **A submission is viewable as soon as either file exists — pairing is bidirectional, not a gate.** Since users upload the PDF themselves, a submission routinely sits with only an input file for a while, waiting on the agent to finish; that's an expected, normal state, not an error, and it's fully selectable in the dropdown like anything else.
+- Both partial states are shown, in the main content area, distinctly:
+  - **Input only** ("analysis pending") — the flags pane shows an "Analysis in progress" message instead of flags; no coverage snapshot yet.
+  - **Output only** ("source unavailable") — flags render normally from the analysis file, but the PDF pane explains the source PDF wasn't found. This is the rarer, more anomalous direction (analysis without a PDF shouldn't typically happen), so the dropdown tags it more like a warning than the routine pending case.
+- "Latest" is determined by the highest prefix number among **all** viewable submissions (any with at least one file), not just complete pairs.
 
-## 5. Real UI states (only two)
+## 5. Real UI states
 
 | State | Condition | What's shown |
 |---|---|---|
-| **Waiting** | No complete pairs exist anywhere in `/input` + `/output` | Empty-state message inviting the user to drop a file into Copilot |
-| **Ready** | At least one complete pair exists | Flags for the selected (default: latest) complete submission |
+| **Waiting** | No submissions exist anywhere in `/input` + `/output` | Empty-state message inviting the user to drop a file into Copilot |
+| **Analysis pending** | Selected submission has a PDF but no analysis yet | "Analysis in progress" message in place of flags |
+| **Ready** | Selected submission has a completed analysis | Flags (and, if the PDF is also present, the PDF pane); a missing source PDF is called out in the PDF pane rather than blocking the flags |
 
-There is intentionally no third "Analyzing" full-panel state — since a submission isn't displayed at all until it's complete, there's nothing partial to render in the main panel. (An in-between processing moment may still exist on the backend; it just isn't something this UI needs to visualize.)
+The dropdown lists every submission regardless of completeness — nothing is disabled or unselectable — with a small tag showing which side (if any) is still missing.
 
 ## 6. Interface components
 

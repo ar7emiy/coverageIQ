@@ -45,13 +45,21 @@ exclusion is identified, analyze it and any endorsements modifying it for
 an exception preserving coverage for emotional distress. Search
 semantically for concepts including:
 - Emotional Distress / Mental Anguish / Mental Injury / Mental Distress
-- Emotional Harm / Humiliation / Mental Suffering
+- Emotional Harm / Humiliation / Mental Suffering / Pain and Suffering
+  (non-physical)
 - Mental or Emotional Injury
 - Similar non-physical injury concepts
 
-The language must actually function as an exception/carve-back to the
-BI/PD exclusion — the mere appearance of "emotional distress" elsewhere in
-the policy does not satisfy this rule.
+The carve-back is often narrower than a blanket exception — many D&O forms
+only restore emotional distress coverage in connection with **employment-
+related** Wrongful Acts (e.g. "...except for Loss arising from emotional
+distress alleged in connection with Discrimination, Harassment, or
+Wrongful Termination..."), since that's the fact pattern insurers actually
+worry about. A carve-back scoped that way still satisfies this rule — note
+the scope in the Finding, but don't require an unqualified/blanket
+exception. The language must actually function as an exception/carve-back
+to the BI/PD exclusion — the mere appearance of "emotional distress"
+elsewhere in the policy does not satisfy this rule.
 
 ## Decision steps
 1. Locate the BI/PD exclusion (Step 1).

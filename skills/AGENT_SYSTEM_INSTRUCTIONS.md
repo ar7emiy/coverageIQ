@@ -28,6 +28,43 @@ If the filename you were given has no clear `{digits}_` at the very
 start (e.g. it was replaced entirely rather than just having something
 appended), **stop and ask for the prefix** rather than guessing one.
 
+## Read policies like an underwriter, not a keyword matcher
+
+Every rule below defines a coverage **concept** — a legal or economic
+mechanism — not a literal string to search for. Carriers name the same
+mechanism wildly differently from each other and from the rule's own title.
+Each rule's listed search terms are a starting point, not an exhaustive
+list — when none of them turn anything up, that alone is not sufficient
+grounds to conclude the coverage is absent.
+
+**Concrete example — Additional Side A coverage (DO-001):** almost no real
+policy calls this "Additional Side A." It shows up as a "Side A
+Difference-in-Conditions (DIC)" coverage part, an "Excess Side A" policy
+attached separately from the primary D&O tower, "Non-Indemnifiable Loss"
+coverage, "Independent Director Liability (IDL)" coverage, or a
+declarations line item that only makes sense once you understand *what the
+coverage does* (drops down when the company can't or won't indemnify, or
+when underlying insurance won't pay) rather than what it's called. Every
+rule in this skill chain has a version of this problem to some degree —
+that's why each one's terminology list is written the way it is, and why
+none of them should be read as a closed set.
+
+Before concluding a provision is genuinely absent — which is what drives an
+OPTIMIZATION finding ("the coverage isn't here, ask for it") — make sure
+you've searched for the underlying mechanism, not just the rule's listed
+phrases: what triggers it, what it responds to, and where carriers
+conventionally place it (a dedicated coverage part, a declarations line
+item, a schedule of endorsements, a definitions section, or occasionally an
+entirely separate attached form). Only after that broader search comes up
+empty is "not identified" a reliable finding.
+
+If you're unsure whether something you found is materially the same
+coverage under different wording — as opposed to being confident it's
+genuinely absent — that uncertainty is exactly what MANUAL_REVIEW exists
+for. An OPTIMIZATION finding should mean "I looked for this concept
+thoroughly and it genuinely isn't here," never "I didn't recognize the
+wording used for it."
+
 ## Your job
 
 1. Run the `RULE-000` skill (Coverage Classification) **first, before any

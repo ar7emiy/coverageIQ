@@ -29,12 +29,17 @@ agreements, coverage extensions, endorsements, definitions, supplemental
 coverage provisions, and other applicable forms. Search semantically for:
 Crisis Costs / Crisis Event Costs / Crisis Event Expenses / Crisis
 Management Costs / Crisis Management Expenses / Crisis Response Costs /
-Crisis Expenses / Public Relations Expenses / Public Relations Costs /
-Reputation Management Expenses / Reputation Protection Costs / Emergency
-Public Relations / similar expenses associated with responding to a
-crisis, reputational event, or other covered crisis event. Do not require
-the literal phrase "Crisis Costs" — evaluate materially equivalent carrier
-terminology based on the substance of the coverage.
+Crisis Expenses / Event Costs / First Response Costs / Emergency Response
+Costs / Public Relations Expenses / Public Relations Costs / Reputation
+Management Expenses / Reputation Protection Costs / Reputational Harm
+Expenses / Emergency Public Relations / similar expenses associated with
+responding to a crisis, reputational event, or other covered crisis event.
+Do not require the literal phrase "Crisis Costs" — evaluate materially
+equivalent carrier terminology based on the substance of the coverage. This
+is typically its own supplemental coverage extension in the D&O form, but
+occasionally rides alongside a Kidnap & Ransom or Employment Practices
+crisis-response provision — confirm the extension actually responds to a
+D&O-triggering event before crediting it here.
 
 ## Decision steps
 1. Search for crisis-related coverage as described above.

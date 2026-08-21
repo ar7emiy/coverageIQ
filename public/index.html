@@ -102,14 +102,13 @@
   .file-item.active .file-item-prefix{ background:var(--ink); color:#fff; }
   .file-item-name{ font-size:12.5px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-  .file-item.flagged{ cursor:default; }
-  .file-item.flagged:hover{ background:none; }
-  .file-item.flagged .file-item-name{ color:var(--slate-2); }
-  .flag-warning{
-    display:flex; align-items:center; gap:5px; margin-top:5px;
-    font-family:var(--font-mono); font-size:10px; color:var(--rust);
+  .file-item-tag{
+    display:inline-flex; align-items:center; gap:5px; margin-top:5px;
+    font-family:var(--font-mono); font-size:10px; padding:2px 7px; border-radius:20px;
   }
-  .flag-warning svg{ width:11px; height:11px; flex-shrink:0; }
+  .file-item-tag svg{ width:11px; height:11px; flex-shrink:0; }
+  .file-item-tag.pending{ background:var(--amber-bg); color:var(--amber); }
+  .file-item-tag.missing-source{ background:var(--rust-bg); color:var(--rust); }
 
   /* workspace */
   .workspace{ flex:1; display:flex; overflow:hidden; position:relative; }
@@ -287,7 +286,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div class="pdf-placeholder-wrap">
+      <div class="pdf-placeholder-wrap" id="pdfPlaceholderWrap">
         <div class="pdf-page"><div class="pdf-page-inner">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg>
           <p>PDF preview — placeholder</p>
@@ -296,6 +295,11 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg>
           <p>page 2</p>
         </div></div>
+      </div>
+      <div class="state-msg" id="pdfUnavailableMsg" style="display:none; flex:1;">
+        <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg></div>
+        <h2>Source PDF unavailable</h2>
+        <p>The original PDF for this submission wasn't found in the input folder — only the analysis is available.</p>
       </div>
     </div>
   </div>
@@ -565,6 +569,8 @@ const workspace = document.getElementById('workspace');
 const pdfTab = document.getElementById('pdfTab');
 const pdfPane = document.getElementById('pdfPane');
 const pdfPaneTitle = document.getElementById('pdfPaneTitle');
+const pdfPlaceholderWrap = document.getElementById('pdfPlaceholderWrap');
+const pdfUnavailableMsg = document.getElementById('pdfUnavailableMsg');
 const pdfClose = document.getElementById('pdfClose');
 const loaderOverlay = document.getElementById('loaderOverlay');
 const loaderFname = document.getElementById('loaderFname');
@@ -584,7 +590,10 @@ async function fetchDetail(prefix){
   return detailCache[prefix];
 }
 
-function completeSubmissions(){ return submissions.filter(s => s.input && s.output); }
+// Any submission with at least one file is viewable now — a PDF alone
+// shows an "analysis pending" state, an analysis alone shows flags with
+// the PDF pane marked unavailable. Only a wholly-unknown prefix is excluded.
+function viewableSubmissions(){ return submissions.filter(s => s.input || s.output); }
 
 function renderMenu(){
   fileMenuList.innerHTML = '';
@@ -596,15 +605,15 @@ function renderMenu(){
   }
 
   submissions.forEach(s => {
-    const isComplete = s.input && s.output;
     const item = document.createElement('div');
-    item.className = 'file-item' + (isComplete ? '' : ' flagged') + (s.prefix === selectedPrefix ? ' active' : '');
-    let warningHtml = '';
-    if (!isComplete){
-      const missing = !s.input ? 'input file' : 'output file';
-      warningHtml = `<div class="flag-warning">
+    item.className = 'file-item' + (s.prefix === selectedPrefix ? ' active' : '');
+    let tagHtml = '';
+    if (!s.output){
+      tagHtml = `<div class="file-item-tag pending">Analysis pending</div>`;
+    } else if (!s.input){
+      tagHtml = `<div class="file-item-tag missing-source">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg>
-        Missing ${missing}
+        Source PDF unavailable
       </div>`;
     }
     item.innerHTML = `
@@ -612,16 +621,14 @@ function renderMenu(){
         <span class="file-item-prefix">${s.prefix}</span>
         <span class="file-item-name">${s.filename}</span>
       </div>
-      ${warningHtml}
+      ${tagHtml}
     `;
-    if (isComplete){
-      item.addEventListener('click', () => selectFile(s.prefix));
-    }
+    item.addEventListener('click', () => selectFile(s.prefix));
     fileMenuList.appendChild(item);
   });
 
-  const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
-  fileBtnLabel.textContent = current ? current.filename : 'No completed reviews yet';
+  const current = viewableSubmissions().find(s => s.prefix === selectedPrefix);
+  fileBtnLabel.textContent = current ? current.filename : 'No submissions yet';
 }
 
 // A single upload may be a combined Management Liability document, so it
@@ -651,14 +658,24 @@ function buildCoverageSnapshot(coverage){
 }
 
 function renderFlagsContent(){
-  const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
+  const current = viewableSubmissions().find(s => s.prefix === selectedPrefix);
 
   if (!current){
     flagsInner.innerHTML = `
       <div class="state-msg">
         <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg></div>
         <h2>Waiting for a submission</h2>
-        <p>Drop a D&amp;O policy into Copilot to start a review. Flags will appear here once both the file and its analysis are ready.</p>
+        <p>Drop a D&amp;O policy into Copilot to start a review — it'll show up here as soon as it's uploaded.</p>
+      </div>`;
+    return;
+  }
+
+  if (!current.output){
+    flagsInner.innerHTML = `
+      <div class="state-msg">
+        <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></div>
+        <h2>Analysis in progress</h2>
+        <p>${current.filename} has been received. Flags will appear here as soon as CoverageIQ finishes reviewing it.</p>
       </div>`;
     return;
   }
@@ -695,9 +712,14 @@ function renderFlagsContent(){
 
 function refreshChrome(){
   renderMenu();
-  const current = completeSubmissions().find(s => s.prefix === selectedPrefix);
+  const current = viewableSubmissions().find(s => s.prefix === selectedPrefix);
   pdfTab.style.display = current ? 'flex' : 'none';
-  if (current) pdfPaneTitle.textContent = current.filename;
+  if (current){
+    pdfPaneTitle.textContent = current.filename;
+    const sourceMissing = !current.input;
+    pdfPlaceholderWrap.style.display = sourceMissing ? 'none' : 'flex';
+    pdfUnavailableMsg.style.display = sourceMissing ? 'flex' : 'none';
+  }
 }
 
 async function selectFile(prefix){
@@ -705,11 +727,14 @@ async function selectFile(prefix){
   fileMenu.classList.remove('show');
   fileBtn.classList.remove('open');
 
-  const target = completeSubmissions().find(s => s.prefix === prefix);
+  const target = viewableSubmissions().find(s => s.prefix === prefix);
   if (!target) return;
 
+  // Only fetch (and cache) detail once analysis actually exists — fetching
+  // while still pending would permanently cache an empty result and hide
+  // the real analysis once it lands.
   if (isFirstRender){
-    await fetchDetail(prefix);
+    if (target.output) await fetchDetail(prefix);
     selectedPrefix = prefix;
     refreshChrome();
     renderFlagsContent();
@@ -722,7 +747,7 @@ async function selectFile(prefix){
   loaderFname.textContent = target.filename;
   loaderOverlay.classList.add('show');
 
-  const detailPromise = fetchDetail(prefix);
+  const detailPromise = target.output ? fetchDetail(prefix) : Promise.resolve();
   loaderEngine.playReverseCompressed(detailPromise, () => {
     selectedPrefix = prefix;
     refreshChrome();
@@ -753,10 +778,10 @@ pdfClose.addEventListener('click', () => workspace.classList.remove('pdf-open'))
 
 async function initDashboard(){
   await fetchSubmissions();
-  const complete = completeSubmissions();
-  if (complete.length){
-    await fetchDetail(complete[0].prefix);
-    selectedPrefix = complete[0].prefix;
+  const viewable = viewableSubmissions();
+  if (viewable.length){
+    selectedPrefix = viewable[0].prefix;
+    if (viewable[0].output) await fetchDetail(selectedPrefix);
   }
   isFirstRender = false;
   refreshChrome();
@@ -764,20 +789,26 @@ async function initDashboard(){
   setInterval(poll, POLL_INTERVAL_MS);
 }
 
-// Background polling only updates the dropdown / auto-selects when nothing
-// is selected yet — it never plays the loading transition, which is
-// reserved for explicit dropdown switches between already-loaded files.
+// Background polling never plays the loading transition (reserved for
+// explicit dropdown switches) — it just quietly re-renders. It also has to
+// keep watching the *currently selected* submission even when selection
+// hasn't changed, since a pending submission can flip to analysis-ready
+// between ticks and needs its detail fetched (once) and re-rendered.
 async function poll(){
   if (loaderPlaying) return;
   await fetchSubmissions();
-  const complete = completeSubmissions();
-  const stillHasSelection = complete.some(s => s.prefix === selectedPrefix);
+  const viewable = viewableSubmissions();
+  const stillHasSelection = viewable.some(s => s.prefix === selectedPrefix);
 
   if (!stillHasSelection){
-    selectedPrefix = complete.length ? complete[0].prefix : null;
-    if (selectedPrefix) await fetchDetail(selectedPrefix);
-    renderFlagsContent();
+    selectedPrefix = viewable.length ? viewable[0].prefix : null;
   }
+
+  const current = viewable.find(s => s.prefix === selectedPrefix);
+  if (current && current.output && !detailCache[current.prefix]){
+    await fetchDetail(current.prefix);
+  }
+  renderFlagsContent();
   refreshChrome();
 }
 </script>

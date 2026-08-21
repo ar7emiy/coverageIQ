@@ -31,10 +31,21 @@ provisions. Search semantically for: Wage & Hour / Wage and Hour / FLSA /
 Fair Labor Standards Act / Wage and Hour Laws / Wage and Hour Claims /
 Wage and Hour Defense Costs / Wage and Hour Defense Expenses / Wage and
 Hour Coverage / Wage and Hour Sublimit / Unpaid Wages / Minimum Wage /
-Overtime / Failure to Pay Overtime / Meal and Rest Breaks / Wage Payment /
-Wage Payment Laws / similar wage-and-hour-related employment claims or
-defense-cost coverage. Treat both "Wage & Hour" and "FLSA" as primary
-terminology.
+Overtime / Failure to Pay Overtime / Meal and Rest Breaks / Rest and
+Recovery Periods / Off-the-Clock Work / Misclassification (exempt vs.
+non-exempt) / Wage Payment / Wage Payment Laws / Portal-to-Portal Act /
+state-law echoes such as the California Labor Code, Illinois Wage Payment
+and Collection Act, or New York Labor Law / similar wage-and-hour-related
+employment claims or defense-cost coverage. Treat both "Wage & Hour" and
+"FLSA" as primary terminology.
+
+**Structural note:** some carriers sell Wage & Hour protection as a
+separately named coverage part or endorsement — "Wage & Hour Legal
+Liability," "Wage & Hour Defense Reimbursement Coverage" — that reads
+almost like its own mini-policy attached to the EPLI form, rather than a
+clause inside the base EPLI insuring agreement. Check the schedule of
+forms/endorsements for anything along those lines, not just the base EPLI
+wording.
 
 ## Decision steps
 1. Search for Wage & Hour / FLSA language as described above. The mere

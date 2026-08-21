@@ -67,7 +67,20 @@ matching family or RULE-000's gating won't route to it.
 synonyms and materially equivalent carrier terminology, not just one exact
 phrase. Note any important distinctions from similar-sounding but different
 provisions (e.g. "this concerns Additional Side A, not the ordinary Side A
-insuring agreement").}}
+insuring agreement").
+
+**Ground this in how real policies actually name the thing, not just
+rewordings of the rule's own title.** Five phrasings that all still contain
+the words "Additional Side A" don't help the agent recognize the same
+coverage sold as "Side A DIC," "Non-Indemnifiable Loss," or "Independent
+Director Liability" — a real carrier's actual label, which is often
+structurally unrelated to the rule name. Where relevant, also note *where*
+carriers conventionally place this provision (a dedicated coverage part, a
+declarations line item, an endorsement schedule, or an entirely separate
+attached form) — the agent frequently misses coverage not because the
+wording is unrecognized but because it's looking in the wrong structural
+place. See `skills/AGENT_SYSTEM_INSTRUCTIONS.md`'s "Read policies like an
+underwriter, not a keyword matcher" section, which every rule inherits.}}
 
 ## Decision steps
 {{If the rule requires more than a single lookup — e.g. "first locate

@@ -57,15 +57,19 @@ node server/server.js          # or: python server-python/server.py
 - Output: `[prefix]_[name]_analysis.md`
 - Files are paired **by prefix number only** (not by the name text), so a
   rename between input and output stays paired as long as the prefix matches.
-- A pair only counts as complete once both files exist — see
-  `server/fileScanner.js`. Incomplete pairs are still returned by
-  `/api/submissions` (with `input`/`output` booleans) so the dropdown can
-  show the red "Missing input file" / "Missing output file" warning exactly
-  as designed in the mockup.
+- Pairing is bidirectional, not a gate — see `server/fileScanner.js`. A
+  submission with only a PDF (analysis not written yet) or only an analysis
+  (PDF missing) is still fully viewable and selectable; `/api/submissions`
+  returns `input`/`output` booleans for every submission so the dropdown can
+  tag whichever side is missing ("Analysis pending" for no output yet,
+  "Source PDF unavailable" for no input) instead of disabling it.
+  `GET /api/submissions/:prefix` mirrors this — it only 404s for a prefix
+  that doesn't exist at all; a submission with no analysis yet returns
+  `200` with empty `coverage`/`flags` rather than erroring.
 
-To manually test the missing-pair state: drop a `005_Something.pdf` into
+To manually test the partial states: drop a `005_Something.pdf` into
 `test_coverageIQ_data/input/` without a matching `_analysis.md` in `output/`
-(or vice versa) and watch it show up grayed-out/disabled in the dropdown
+(or vice versa) and watch it show up tagged in the dropdown, selectable,
 within a few seconds (polling interval is `POLL_INTERVAL_MS` in
 `server/config.js`, default 3s).
 

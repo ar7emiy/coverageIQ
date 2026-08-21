@@ -31,12 +31,17 @@ agreements, endorsements, definitions, and amendatory endorsements.
 Search semantically for: Workplace Violence / Workplace Violence Coverage
 / Costs / Expenses / Event / Incident / Response / Crisis / Counseling /
 Crisis Management Expenses / Crisis Response Expenses / Employee
-Counseling Expenses / Counseling Services / Security Expenses / Public
-Relations Expenses / Workplace Threat / Threat of Violence / Violent Act /
-similar coverage responding to an actual or threatened violent event
-affecting the workplace. Do not require the exact phrase "Workplace
-Violence Coverage" — evaluate materially equivalent carrier terminology
-based on the substance of the coverage.
+Counseling Expenses / Trauma Counseling / Counseling Services / Security
+Expenses / Post-Incident Security / Public Relations Expenses / Business
+Interruption (workplace-violence-triggered) / Workplace Threat / Threat of
+Violence / Violent Act / Active Shooter / Active Assailant / similar
+coverage responding to an actual or threatened violent event affecting the
+workplace. Do not require the exact phrase "Workplace Violence Coverage" —
+evaluate materially equivalent carrier terminology based on the substance
+of the coverage. Some carriers deliver this as a "Workplace Violence
+Expense" endorsement with its own distinct sublimit schedule, separate
+from the general Crisis Costs extension — check the endorsement schedule
+specifically, not just the base EPLI definitions.
 
 ## Decision steps
 1. Search for Workplace Violence coverage as described above. The

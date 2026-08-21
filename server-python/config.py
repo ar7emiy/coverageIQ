@@ -18,8 +18,11 @@ PORT = int(os.environ.get('PORT', 5175))
 
 # ============================================================
 # REAL ONEDRIVE FOLDERS (smkenney's laptop)
-# To switch over: comment out the INPUT_DIR/OUTPUT_DIR assignments above,
-# then uncomment the two lines below.
-# ============================================================
+# To switch over: comment out the whole block above, then uncomment this
+# whole block below. Each block is self-contained (defines all four names)
+# so a partial swap can't leave PORT/POLL_INTERVAL_MS undefined.
+# # ============================================================
 # INPUT_DIR = Path(r'C:\Users\smkenney\OneDrive\coverageIQ_AI\input')
 # OUTPUT_DIR = Path(r'C:\Users\smkenney\OneDrive\coverageIQ_AI\output')
+# POLL_INTERVAL_MS = 3000
+# PORT = int(os.environ.get('PORT', 5175))

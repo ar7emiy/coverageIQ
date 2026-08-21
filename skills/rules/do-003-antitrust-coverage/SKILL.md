@@ -23,26 +23,35 @@ Antitrust Exclusion or materially equivalent exclusion, and if so, whether
 the policy provides any antitrust coverage back through a carve-back,
 defense-cost coverage, sublimit, or full-limit coverage.
 
-Antitrust exclusions are commonly expected within Private Company D&O base
-forms — actively search for the exclusion rather than assuming silence
-means the exposure is covered.
+Antitrust exclusions are common within Private Company D&O base forms, so
+actively search for one rather than assuming silence means it's absent —
+but a reliable review that genuinely finds none is a real, valid result
+(full antitrust coverage applies by default), not evidence of an
+incomplete search.
 
 ## Search concepts / terminology
 **Step 1 — locate antitrust language.** Review the entire policy or quote,
 including the base form, declarations, coverage schedules, and
-endorsements, for antitrust-related language. Search semantically for
-concepts including:
+endorsements, for antitrust-related language. It is commonly just one
+numbered item in a generic exclusions list, not its own captioned section.
+Search semantically for concepts including:
 - Antitrust / Anti-Trust
-- Restraint of Trade
-- Unfair Competition
-- Price Fixing
-- Price Discrimination
-- Monopoly / Monopolization
-- Sherman Act / Clayton Act / Federal Trade Commission Act
+- Restraint of Trade / Trade Practices
+- Unfair Competition / Unfair Business Practices
+- Price Fixing / Price Discrimination / Predatory Pricing
+- Monopoly / Monopolization / Attempted Monopolization
+- Tying Arrangement / Exclusive Dealing / Market Allocation
+- Sherman Act / Clayton Act / Federal Trade Commission Act / Robinson-Patman
+  Act / Hart-Scott-Rodino Act
+- Restraint of Competition / Anticompetitive Conduct / Antitrust Laws
 - Similar language restricting coverage for anticompetitive or
   trade-practice claims
 
 Do not require the provision to literally be titled "Antitrust Exclusion."
+Also actively confirm the opposite: many Private Company D&O forms simply
+carry **no** antitrust exclusion at all, in which case antitrust claims are
+covered under the ordinary insuring agreement with no restoration needed —
+see the PASS logic below for how to report that.
 
 **Step 3 — search for coverage restoration.** If an Antitrust Exclusion
 exists, review the entire document for provisions that restore some or all
@@ -63,9 +72,11 @@ document does not satisfy this requirement.
 ## Decision steps
 1. Locate antitrust-related language (Step 1) and determine whether an
    Antitrust Exclusion affirmatively exists.
-2. If it cannot be reliably determined whether an exclusion exists, return
-   MANUAL_REVIEW — do not infer antitrust is covered merely because no
-   exclusion could be located.
+2. If, after a reliable full-document review, no Antitrust Exclusion is
+   identified at all, that is a PASS (see below) — full antitrust coverage
+   applies by default when nothing excludes it. This is different from
+   being *unable to determine* whether one exists (incomplete document,
+   ambiguous language) — that case is MANUAL_REVIEW, not PASS.
 3. If an exclusion exists, search for coverage restoration (Step 3) and
    determine its type and amount.
 
@@ -80,15 +91,19 @@ applicable: where the exclusion was found, and where the restoration
 ## Status logic
 
 ### 🟢 PASS — Antitrust Coverage Identified
-Triggered when: an Antitrust Exclusion exists **and** CoverageIQ identifies
-full-limit coverage, a sublimit, defense-cost coverage, or a qualifying
-carve-back that restores it.
-
-Output: a Finding stating the type and amount of coverage identified (e.g.
-"Antitrust Exclusion identified. $250,000 Antitrust Defense Costs sublimit
-identified by endorsement."), plus labeled Evidence for both the exclusion
-and the restoring language (`Evidence (Exclusion):` /
-`Evidence (Coverage Restoration):`). No Recommendation.
+Two distinct triggers both return PASS:
+- **An Antitrust Exclusion exists AND** CoverageIQ identifies full-limit
+  coverage, a sublimit, defense-cost coverage, or a qualifying carve-back
+  that restores it. Output a Finding stating the type and amount of
+  coverage identified (e.g. "Antitrust Exclusion identified. $250,000
+  Antitrust Defense Costs sublimit identified by endorsement."), plus
+  labeled Evidence for both the exclusion and the restoring language
+  (`Evidence (Exclusion):` / `Evidence (Coverage Restoration):`). No
+  Recommendation.
+- **No Antitrust Exclusion identified at all**, after a reliable
+  full-document review. Output a Finding: "No applicable Antitrust
+  Exclusion identified — antitrust-related claims are covered under the
+  ordinary insuring agreement." No Recommendation.
 
 ### ⚠️ OPTIMIZATION — Exclusion Without Coverage
 Triggered when: an Antitrust Exclusion is identified **and** no full-limit

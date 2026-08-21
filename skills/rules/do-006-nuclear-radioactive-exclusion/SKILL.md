@@ -26,12 +26,19 @@ removal.
 
 ## Search concepts / terminology
 Review the entire policy, including endorsements, searching semantically
-for: Nuclear / Nuclear Energy / Nuclear Hazard / Nuclear Material /
-Nuclear Facility / Nuclear Reaction / Nuclear Incident / Radioactive /
-Radioactivity / Radiation / Ionizing Radiation / Radioactive
+for: Nuclear / Nuclear Energy / Nuclear Energy Liability / Nuclear Hazard /
+Nuclear Material / Nuclear Facility / Nuclear Reaction / Nuclear Incident /
+Radioactive / Radioactivity / Radiation / Ionizing Radiation / Radioactive
 Contamination / Nuclear Fuel / Nuclear Waste / Fission / Fusion / similar
 nuclear or radioactive-material exclusionary language. Do not require the
-exclusion to literally be titled "Nuclear Exclusion."
+exclusion to literally be titled "Nuclear Exclusion" — it is commonly
+folded into a broader "War, Terrorism, and Nuclear" or "War and Nuclear
+Hazard" exclusion rather than standing alone. Also recognize references to
+the standard-form or industry-pool names sometimes used as shorthand for
+this exclusion: Nuclear Energy Liability Exclusion / NEIL / MAELU
+(Mutual Atomic Energy Liability Underwriters) / ANI (American Nuclear
+Insurers) / Price-Anderson Act — a reference to any of these is evidence of
+this exclusion even without the word "nuclear" appearing nearby.
 
 ## Decision steps
 1. Locate nuclear/radioactive-related exclusionary language and determine

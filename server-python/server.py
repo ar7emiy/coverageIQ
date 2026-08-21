@@ -58,8 +58,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
 
-        # List every submission (complete or not) — the dropdown needs the
-        # incomplete ones too, to render the "Missing input/output file" warning.
+        # List every submission (PDF-only, analysis-only, or both) — the
+        # dropdown shows all of them, tagged by whichever side is missing.
         if path == '/api/submissions':
             submissions = [
                 {'prefix': s['prefix'], 'filename': s['filename'], 'input': s['input'], 'output': s['output']}
@@ -67,14 +67,18 @@ class Handler(BaseHTTPRequestHandler):
             ]
             return self._send_json(200, submissions)
 
-        # Coverage snapshot + flags for one complete pair, parsed from its
-        # analysis .md on demand.
+        # Coverage snapshot + flags for one submission, parsed from its
+        # analysis .md on demand. No analysis yet (PDF uploaded, not yet
+        # reviewed) is not an error — it just returns empty coverage/flags;
+        # only a wholly unknown prefix 404s.
         m = PREFIX_RE.match(path)
         if m:
             prefix = m.group(1)
             sub = next((s for s in scan_submissions() if s['prefix'] == prefix), None)
-            if not sub or not sub['input'] or not sub['output']:
-                return self._send_json(404, {'error': 'Not a complete pair'})
+            if not sub:
+                return self._send_json(404, {'error': 'Unknown submission'})
+            if not sub['output']:
+                return self._send_json(200, {'prefix': prefix, 'filename': sub['filename'], 'coverage': [], 'flags': []})
             md_path = OUTPUT_DIR / sub['output_file']
             try:
                 text = md_path.read_text(encoding='utf-8')

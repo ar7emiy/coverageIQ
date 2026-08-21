@@ -28,12 +28,17 @@ present and operative, flag it and recommend requesting its removal.
 Search semantically for: Telephone Consumer Protection Act / TCPA /
 Consumer Protection / Telemarketing / Unsolicited Communications /
 Unsolicited Telephone Calls / Unsolicited Text Messages / SMS / Text
-Messaging / Unsolicited Facsimiles / Fax / Facsimile / CAN-SPAM /
-Do-Not-Call / communications statutes / similar laws regulating
-unsolicited communications, advertising, solicitation, telephone calls,
-texts, or electronic communications. Some carriers use a broader
-communications-law exclusion rather than naming TCPA specifically —
-recognize that as equivalent.
+Messaging / Unsolicited Facsimiles / Fax / Facsimile / Junk Fax Prevention
+Act / CAN-SPAM / CAN-SPAM Act / Do-Not-Call / Telemarketing Sales Rule /
+Video Privacy Protection Act (sometimes bundled into the same broader
+privacy/communications exclusion) / "similar state or federal statute" /
+communications statutes / similar laws regulating unsolicited
+communications, advertising, solicitation, telephone calls, texts, or
+electronic communications. Some carriers use a broader "Privacy Violation"
+or general communications-law exclusion rather than naming TCPA
+specifically, sometimes with a catch-all like "...or any similar state or
+federal statute regulating unsolicited communications" — recognize that
+sweep-in language as equivalent even when TCPA is never named.
 
 ## Decision steps
 1. Locate TCPA or materially equivalent communications-law exclusionary

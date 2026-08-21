@@ -31,11 +31,17 @@ Start with the definition of Employee / Employees / Insured Person /
 Individual Insured / Worker / Employment Practices Insured, or other
 materially equivalent defined terms. Within it, search semantically for:
 Independent Contractor(s) / Contract Worker / Contract Employee /
-Contractor / Freelance Worker / Freelancer / Temporary Worker / Temporary
-Employee / Leased Employee / Leased Worker / similar terminology
+Contractor / Freelance Worker / Freelancer / Gig Worker / 1099 Worker /
+Temporary Worker / Temporary Employee / Seasonal Worker / Leased Employee
+/ Leased Worker / Staffing Agency Personnel / similar terminology
 describing individuals providing services who may not qualify as
 traditional employees. Do not require the exact phrase "independent
-contractor" — evaluate the substance of the definition.
+contractor" — evaluate the substance of the definition. Also check for a
+"Misclassification of Employees" or "Worker Classification" provision,
+which cuts the other way — it can either extend coverage to
+misclassified workers or specifically exclude claims arising from
+misclassification, so read its actual effect rather than assuming from
+the label alone.
 
 ## Decision steps
 1. Determine whether independent contractors or materially equivalent

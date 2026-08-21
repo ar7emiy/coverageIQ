@@ -30,10 +30,14 @@ endorsements, exclusions, declarations, coverage schedules, and amendatory
 endorsements. Search semantically for: Third-Party Wrongful Act /
 Third-Party Employment Practices / Third-Party EPLI / Third-Party
 Liability / Third-Party Discrimination / Third-Party Harassment /
-discrimination or harassment against a third party / wrongful act against
-a third party / similar terminology extending employment-practices
-coverage to non-employees. Do not require the literal phrase "Third-Party
-Wrongful Act."
+Non-Employee Wrongful Act / Customer, Client, or Vendor Harassment
+Coverage / discrimination or harassment against a third party / wrongful
+act against a third party / similar terminology extending employment-
+practices coverage to non-employees. Do not require the literal phrase
+"Third-Party Wrongful Act" — it's frequently delivered as a coverage
+extension or endorsement with its own distinct name (e.g. "Third-Party
+Discrimination and Harassment Coverage Extension") rather than folded into
+the base Wrongful Act definition.
 
 Who qualifies as a third party: customers, clients, vendors, suppliers,
 service providers, contractors, business invitees, visitors, applicants,

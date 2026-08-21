@@ -44,7 +44,10 @@ BIPA is not expressly named.
    Information exclusion, Privacy exclusion, statutory exclusion naming
    BIPA, part of a broader confidential/privacy exclusion, or within an
    endorsement). The mere appearance of "BIPA" or "biometric information"
-   does not establish that an exclusion exists — evaluate in context.
+   does not establish that an exclusion exists — evaluate in context. If a
+   reliable full-document review finds no such exclusion at all, that is a
+   PASS (biometric claims are covered under the ordinary insuring
+   agreement) — do not treat absence-after-real-search as uncertainty.
 2. **If an exclusion exists, do not stop there** — search the entire
    document for provisions that restore coverage: a BIPA/Biometric
    sublimit, a Defense Costs sublimit, a carve-back to the exclusion, or
@@ -64,15 +67,20 @@ endorsements/schedules for restored coverage → identify applicable limit
 
 ## Status logic
 
-### 🟢 PASS — BIPA/Biometric Coverage ≥ $50,000
-Triggered when: applicable BIPA/Biometric coverage is affirmatively
-identified with a limit or sublimit of $50,000 or greater — whether or not
-a BIPA exclusion also exists (if it does, note that coverage was restored
-through a qualifying sublimit/carve-back).
-
-Output: a Finding (e.g. "BIPA / Biometric Information coverage identified
-— $100,000 sublimit."), plus Evidence for both the exclusion (if any) and
-the restoring provision. No Recommendation.
+### 🟢 PASS
+Two distinct triggers both return PASS:
+- **No BIPA/Biometric exclusion identified at all**, after a reliable
+  full-document review. Output a Finding: "No applicable BIPA / Biometric
+  Information exclusion identified — biometric-related claims are covered
+  under the ordinary EPLI insuring agreement." No Recommendation. (This
+  resolves the open edge case previously flagged in Notes — see below.)
+- **Applicable BIPA/Biometric coverage is affirmatively identified with a
+  limit or sublimit of $50,000 or greater** — whether or not a BIPA
+  exclusion also exists (if it does, note that coverage was restored
+  through a qualifying sublimit/carve-back). Output a Finding (e.g. "BIPA /
+  Biometric Information coverage identified — $100,000 sublimit."), plus
+  Evidence for both the exclusion (if any) and the restoring provision. No
+  Recommendation.
 
 ### ⚠️ OPTIMIZATION — Exclusion With No Restoration, or Below Threshold
 Two triggers, both OPTIMIZATION:
@@ -124,8 +132,8 @@ evidence separately when applicable, using labeled Evidence entries.
 Include a confidence level.
 
 ## Notes
-Open edge case (not yet encoded — flagged by the SME for a future
-decision): what should happen when there is **no BIPA exclusion at all**?
-Current lean is PASS if a reliable review establishes no applicable
-exclusion exists, but this isn't decided yet — treat as MANUAL_REVIEW
-until an administrator confirms the intended behavior.
+The previously open edge case — what happens when there's no BIPA
+exclusion at all — is now resolved as PASS (see Status logic above), for
+consistency with how every other exclusion-focused rule in this set
+(DO-003, DO-005, DO-006, DO-007) treats a reliably-confirmed absence: it's
+a real, valid result, not an ambiguity requiring MANUAL_REVIEW.

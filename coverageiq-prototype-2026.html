@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoverageIQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Core User Palette */
+    --navy: #062b43;
+    --navy-dark: #031c2c;
+    --navy-light: #0d4063;
+    --ice: #a4cBe1;
+    --ice-tint: #eaf3f8;
+    --ice-soft: #f4f8fb;
+    --white: #ffffff;
+
+    /* Apple-like Neutral Canvas & Surfaces */
+    --bg-app: #f5f7fa;
+    --bg-card: #ffffff;
+    --bg-subtle: #f8fafc;
+    --border: rgba(6, 43, 67, 0.08);
+    --border-hover: rgba(6, 43, 67, 0.16);
+    --border-active: #a4cBe1;
+
+    /* Text Hierarchy (High legibility, no micro-fonts) */
+    --text-1: #062b43;
+    --text-2: #3a566a;
+    --text-3: #6b8699;
+    --text-4: #9db2c0;
+
+    /* Semantic Accents (Refined & Quiet) */
+    --opt-color: #c94a29;
+    --opt-bg: #fdf3f0;
+    --opt-border: rgba(201, 74, 41, 0.2);
+
+    --rev-color: #b87b14;
+    --rev-bg: #fdf8ee;
+    --rev-border: rgba(184, 123, 20, 0.2);
+
+    --pass-color: #1a7f5a;
+    --pass-bg: #eef8f3;
+    --pass-border: rgba(26, 127, 90, 0.2);
+
+    /* Apple-Style Smooth Shadows */
+    --shadow-sm: 0 1px 3px rgba(6, 43, 67, 0.04), 0 1px 2px rgba(6, 43, 67, 0.02);
+    --shadow-md: 0 4px 16px rgba(6, 43, 67, 0.06), 0 1px 3px rgba(6, 43, 67, 0.03);
+    --shadow-lg: 0 12px 36px rgba(6, 43, 67, 0.09), 0 2px 6px rgba(6, 43, 67, 0.03);
+    --shadow-active: 0 0 0 2px var(--navy), 0 8px 24px rgba(6, 43, 67, 0.12);
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+
+    --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    --font-mono: 'JetBrains Mono', SFMono-Regular, monospace;
+    --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html, body {
+    height: 100%;
+    font-family: var(--font-main);
+    background: var(--bg-app);
+    color: var(--text-1);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ========== 3-COLUMN APP SHELL ========== */
+  .app-shell {
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ========== 1. LEFT PANE: COPILOT (350px) ========== */
+  .copilot-sidebar {
+    width: 350px;
+    flex: 0 0 350px;
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+    transition: width 0.35s var(--ease-apple), flex-basis 0.35s var(--ease-apple);
+  }
+
+  .copilot-sidebar.collapsed {
+    width: 0;
+    flex: 0 0 0px;
+    overflow: hidden;
+    border-right: none;
+  }
+
+  .sidebar-header {
+    height: 60px;
+    padding: 0 20px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .copilot-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .copilot-badge-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, #0078d4, #004578);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .copilot-badge-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: #ffffff;
+  }
+
+  .copilot-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .sidebar-chat-feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #fafbfc;
+  }
+
+  .bubble-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bubble-group.user { align-items: flex-end; }
+  .bubble-group.agent { align-items: flex-start; }
+
+  .chat-bubble {
+    max-width: 90%;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .bubble-group.user .chat-bubble {
+    background: var(--navy);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .bubble-group.agent .chat-bubble {
+    background: var(--white);
+    color: var(--text-1);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .doc-attachment-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .bubble-time {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  .sidebar-input-tray {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    background: var(--white);
+  }
+
+  .inactive-input-pill {
+    background: var(--bg-app);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--text-3);
+    user-select: none;
+    cursor: not-allowed;
+  }
+
+  /* ========== 2. CENTER: COVERAGEIQ WORKSPACE ========== */
+  .workspace-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-app);
+  }
+
+  /* Top Navigation Bar */
+  .top-navbar {
+    height: 60px;
+    background: var(--navy);
+    color: #ffffff;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 10;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .btn-sidebar-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .btn-sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-gem-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--ice), var(--navy-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-gem-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: #ffffff;
+    stroke-width: 2.2;
+    fill: none;
+  }
+
+  .brand-text {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+
+  .brand-text span { color: var(--ice); }
+
+  .doc-capsule {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 4px 12px;
+    border-radius: var(--radius-xl);
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .doc-prefix-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--ice);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-apple {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s var(--ease-apple);
+  }
+
+  .btn-apple:hover {
+    background: var(--ice);
+    color: var(--navy);
+    border-color: var(--ice);
+  }
+
+  .btn-apple.active {
+    background: var(--white);
+    color: var(--navy);
+    border-color: var(--white);
+  }
+
+  /* Main Workspace Canvas */
+  .workspace-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Section Titles */
+  .section-headline {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* ========== 4 SQUARE COVERAGE CARDS (CLEAN APPLE CARDS) ========== */
+  .squares-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+  }
+
+  .coverage-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 210px;
+    aspect-ratio: 1.08 / 1;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.25s var(--ease-apple);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .coverage-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  .coverage-card.selected {
+    border-color: var(--navy);
+    box-shadow: var(--shadow-active);
+    background: linear-gradient(180deg, #ffffff 0%, var(--ice-soft) 100%);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .module-code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--ice-tint);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.25;
+  }
+
+  .status-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--radius-xl);
+    white-space: nowrap;
+  }
+  .status-tag.present { background: var(--pass-bg); color: var(--pass-color); border: 1px solid var(--pass-border); }
+  .status-tag.review { background: var(--rev-bg); color: var(--rev-color); border: 1px solid var(--rev-border); }
+  .status-tag.not-present { background: #f1f5f9; color: var(--text-3); border: 1px solid #e2e8f0; }
+
+  /* Financial Metrics */
+  .card-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 0;
+  }
+
+  .metric-amount {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+  }
+
+  .metric-sub {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  .metric-sub.muted { color: var(--text-4); font-size: 14px; }
+
+  /* Evidence Block in Square */
+  .card-evidence-snippet {
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ev-header-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+  }
+
+  .ev-quote-text {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--text-2);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-3);
+    padding-top: 4px;
+  }
+
+  .card-summary-pills {
+    display: flex;
+    gap: 6px;
+  }
+
+  .summary-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .summary-pill.opt { background: var(--opt-bg); color: var(--opt-color); border: 1px solid var(--opt-border); }
+  .summary-pill.rev { background: var(--rev-bg); color: var(--rev-color); border: 1px solid var(--rev-border); }
+  .summary-pill.pass { background: var(--pass-bg); color: var(--pass-color); border: 1px solid var(--pass-border); }
+
+  /* ========== 4-COLUMN RULES ACCORDION DECK ========== */
+  .rules-section-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .rules-filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .filter-pill {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: var(--radius-xl);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-pill:hover {
+    border-color: var(--navy);
+    color: var(--navy);
+  }
+
+  .filter-pill.active {
+    background: var(--navy);
+    color: #ffffff;
+    border-color: var(--navy);
+  }
+
+  .rules-search {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 5px 14px;
+    font-size: 12.5px;
+    font-family: var(--font-main);
+    color: var(--text-1);
+    width: 180px;
+    outline: none;
+    transition: width 0.2s var(--ease-apple), border-color 0.2s ease;
+  }
+  .rules-search:focus { border-color: var(--navy); width: 220px; }
+
+  /* Deck Layout */
+  .columns-deck {
+    display: flex;
+    gap: 14px;
+    min-height: 520px;
+    flex: 1;
+    width: 100%;
+    transition: all 0.35s var(--ease-apple);
+  }
+
+  .deck-col {
+    flex: 1;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: flex 0.35s var(--ease-apple), border-color 0.2s ease;
+    min-width: 0;
+  }
+
+  .deck-col:hover { border-color: var(--border-hover); }
+
+  /* 58% Focus vs 14% Compact Strip */
+  .columns-deck.has-expanded .deck-col {
+    flex: 0 0 14%;
+  }
+
+  .columns-deck.has-expanded .deck-col.expanded {
+    flex: 1 1 58%;
+    border-color: var(--navy);
+    box-shadow: var(--shadow-md);
+  }
+
+  .col-top-bar {
+    padding: 14px 16px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .col-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .col-main-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .col-count-bubble {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    background: var(--bg-app);
+    padding: 2px 7px;
+    border-radius: var(--radius-xl);
+  }
+
+  /* Compressed Strip View */
+  .col-strip-view {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 8px;
+    gap: 12px;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .columns-deck.has-expanded .deck-col:not(.expanded) .col-strip-view {
+    display: flex;
+  }
+
+  .columns-deck.has-expanded .deck-col:not(.expanded) .col-scroll-feed {
+    display: none;
+  }
+
+  .strip-vertical-title {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: 0.02em;
+    margin-top: 10px;
+  }
+
+  .strip-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .strip-pill {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 4px;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  /* Rule Scroll Feed */
+  .col-scroll-feed {
+    padding: 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    background: #fafbfc;
+  }
+
+  /* CLEAN APPLE RULE CARD (HIGH LEGIBILITY) */
+  .rule-item-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s var(--ease-apple);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .rule-item-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  .rule-item-card.opt {
+    border-left: 4px solid var(--opt-color);
+  }
+
+  .rule-item-card.rev {
+    border-left: 4px solid var(--rev-color);
+  }
+
+  .rule-item-card.pass {
+    border-left: 4px solid var(--pass-color);
+  }
+
+  .rule-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .rule-id-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--ice-tint);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+
+  .rule-headline {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.35;
+  }
+
+  .rule-pill-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: var(--radius-xl);
+    white-space: nowrap;
+  }
+  .rule-pill-badge.opt { background: var(--opt-bg); color: var(--opt-color); border: 1px solid var(--opt-border); }
+  .rule-pill-badge.rev { background: var(--rev-bg); color: var(--rev-color); border: 1px solid var(--rev-border); }
+  .rule-pill-badge.pass { background: var(--pass-bg); color: var(--pass-color); border: 1px solid var(--pass-border); }
+
+  .rule-finding-body {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--text-2);
+  }
+
+  .rule-recommendation-box {
+    background: var(--opt-bg);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--opt-color);
+  }
+
+  .rec-label-eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--opt-color);
+    margin-bottom: 4px;
+  }
+
+  .rule-evidence-box {
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .ev-meta-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-3);
+  }
+
+  .btn-doc-link {
+    background: none;
+    border: none;
+    color: var(--navy);
+    cursor: pointer;
+    font-size: 11.5px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-decoration: underline;
+  }
+  .btn-doc-link:hover { color: var(--navy-light); }
+
+  .ev-quote-string {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-1);
+  }
+
+  .rule-reasoning-body {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-3);
+  }
+
+  .empty-state-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 16px;
+    gap: 8px;
+    color: var(--text-3);
+  }
+
+  /* ========== 3. RIGHT PANE: PDF VIEWER (420px) ========== */
+  .pdf-sidebar {
+    flex: 0 0 0px;
+    width: 0;
+    background: #f0f4f8;
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.35s var(--ease-apple), flex-basis 0.35s var(--ease-apple);
+    overflow: hidden;
+    z-index: 20;
+  }
+
+  .pdf-sidebar.open {
+    flex: 0 0 420px;
+    width: 420px;
+  }
+
+  .pdf-bar-header {
+    height: 60px;
+    padding: 0 20px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pdf-header-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    font-family: var(--font-mono);
+  }
+
+  .btn-pdf-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-3);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+  }
+  .btn-pdf-close:hover { background: var(--bg-app); color: var(--navy); }
+
+  .pdf-document-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .pdf-sheet {
+    width: 100%;
+    max-width: 370px;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    padding: 28px 24px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.65;
+    color: #1e293b;
+    position: relative;
+  }
+
+  .pdf-section-title {
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--navy);
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+
+  .pdf-text-highlight {
+    background: var(--opt-bg);
+    border-bottom: 2px solid var(--opt-color);
+    padding: 2px 0;
+    font-weight: 600;
+    color: var(--opt-color);
+  }
+
+  .pdf-footer-page {
+    position: absolute;
+    bottom: 8px;
+    right: 14px;
+    font-size: 10px;
+    color: var(--text-4);
+  }
+
+  /* Responsive containment */
+  @media (max-width: 1400px) {
+    .copilot-sidebar { width: 300px; flex-basis: 300px; }
+    .pdf-sidebar.open { width: 360px; flex-basis: 360px; }
+  }
+  @media (max-width: 1100px) {
+    .squares-container { grid-template-columns: repeat(2, 1fr); }
+    .columns-deck { flex-direction: column; }
+    .columns-deck.has-expanded .deck-col { flex: 1 1 auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- 1. LEFT COPILOT CHATBOT SIDEBAR (350px) -->
+  <aside class="copilot-sidebar" id="copilotSidebar">
+    <div class="sidebar-header">
+      <div class="copilot-brand">
+        <div class="copilot-badge-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6zm-2-8c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+        </div>
+        <span class="copilot-title">Microsoft Copilot</span>
+      </div>
+    </div>
+
+    <div class="sidebar-chat-feed">
+      <div class="bubble-group user">
+        <div class="chat-bubble">
+          Please run the CoverageIQ skill chain on this D&amp;O policy.
+          <div class="doc-attachment-card">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            <span>004_Acme_DO_Policy.pdf</span>
+          </div>
+        </div>
+        <span class="bubble-time">10:42 AM</span>
+      </div>
+
+      <div class="bubble-group agent">
+        <div class="chat-bubble">
+          I've processed <strong>004_Acme_Holdings_DO_Policy.pdf</strong> across all 4 coverage modules:
+          <ul style="margin: 8px 0 8px 18px; font-size: 12.5px; line-height: 1.5;">
+            <li><strong>D&amp;O:</strong> Present ($2M Limit) — 3 Optimizations</li>
+            <li><strong>EPLI:</strong> Present ($1M Limit) — 2 Optimizations</li>
+            <li><strong>Fiduciary:</strong> Manual Review Needed</li>
+            <li><strong>Crime:</strong> Not Purchased</li>
+          </ul>
+          Full findings and actionable recommendations are ready in your CoverageIQ dashboard.
+        </div>
+        <span class="bubble-time">10:43 AM · CoverageIQ Hook</span>
+      </div>
+    </div>
+
+    <div class="sidebar-input-tray">
+      <div class="inactive-input-pill">Ask Copilot a question about this policy...</div>
+    </div>
+  </aside>
+
+  <!-- 2. CENTER: MAIN WORKSPACE -->
+  <main class="workspace-main">
+
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar">
+      <div class="nav-left">
+        <button class="btn-sidebar-toggle" id="toggleCopilotBtn" title="Toggle Copilot sidebar">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+        </button>
+        <div class="brand-lockup">
+          <div class="brand-gem-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V7l-9-5z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <div class="brand-text">Coverage<span>IQ</span></div>
+        </div>
+        <div class="doc-capsule">
+          <span class="doc-prefix-badge">004</span>
+          <span>Acme_Holdings_DO_Policy.pdf</span>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <button class="btn-apple" id="resetDeckBtn">Reset Deck</button>
+        <button class="btn-apple active" id="togglePdfBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          Policy PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Canvas -->
+    <div class="workspace-scroll">
+
+      <!-- SECTION 1: 4 SQUARE COVERAGE CARDS -->
+      <section>
+        <div class="section-headline">
+          <span>Coverage Classification</span>
+          <span>RULE-000 Snapshot</span>
+        </div>
+
+        <div class="squares-container">
+
+          <!-- Card 1: D&O -->
+          <div class="coverage-card selected" data-module="DO" id="cardDO">
+            <div class="card-top">
+              <div>
+                <span class="module-code">DO</span>
+                <div class="card-title">Private Company D&amp;O</div>
+              </div>
+              <span class="status-tag present">Present</span>
+            </div>
+
+            <div class="card-metrics">
+              <div class="metric-amount">$2,000,000</div>
+              <div class="metric-sub">$25,000 Retention</div>
+            </div>
+
+            <div class="card-evidence-snippet">
+              <div class="ev-header-line">
+                <span>Evidence</span>
+                <span>Page 3, Decl.</span>
+              </div>
+              <p class="ev-quote-text">"Item 4. Directors &amp; Officers Liability — $2,000,000 Aggregate Limit of Liability, Retention $25,000."</p>
+            </div>
+
+            <div class="card-footer-info">
+              <div class="card-summary-pills">
+                <span class="summary-pill opt">3 Opt</span>
+                <span class="summary-pill rev">1 Rev</span>
+                <span class="summary-pill pass">10 Pass</span>
+              </div>
+              <span>Active</span>
+            </div>
+          </div>
+
+          <!-- Card 2: EPLI -->
+          <div class="coverage-card" data-module="EPLI" id="cardEPLI">
+            <div class="card-top">
+              <div>
+                <span class="module-code">EPLI</span>
+                <div class="card-title">Employment Practices</div>
+              </div>
+              <span class="status-tag present">Present</span>
+            </div>
+
+            <div class="card-metrics">
+              <div class="metric-amount">$1,000,000</div>
+              <div class="metric-sub">$50,000 Retention</div>
+            </div>
+
+            <div class="card-evidence-snippet">
+              <div class="ev-header-line">
+                <span>Evidence</span>
+                <span>Page 3, Item 4</span>
+              </div>
+              <p class="ev-quote-text">"Item 4. Employment Practices Liability — $1,000,000 Limit, $50,000 Retention each Wrongful Act."</p>
+            </div>
+
+            <div class="card-footer-info">
+              <div class="card-summary-pills">
+                <span class="summary-pill opt">2 Opt</span>
+                <span class="summary-pill pass">5 Pass</span>
+              </div>
+              <span>Select</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Fiduciary -->
+          <div class="coverage-card" data-module="FI" id="cardFI">
+            <div class="card-top">
+              <div>
+                <span class="module-code">FI</span>
+                <div class="card-title">Fiduciary Liability</div>
+              </div>
+              <span class="status-tag review">Manual Review</span>
+            </div>
+
+            <div class="card-metrics">
+              <div class="metric-amount" style="font-size: 16px; color: var(--text-2);">Not Stated</div>
+              <div class="metric-sub muted">No allocation on form</div>
+            </div>
+
+            <div class="card-evidence-snippet">
+              <div class="ev-header-line">
+                <span>Evidence</span>
+                <span>Page 4, Endt. 2</span>
+              </div>
+              <p class="ev-quote-text">"Endorsement 2 states Fiduciary Liability available upon separate application; schedule shows $0 allocated."</p>
+            </div>
+
+            <div class="card-footer-info">
+              <div class="card-summary-pills">
+                <span class="summary-pill opt">1 Opt</span>
+                <span class="summary-pill rev">1 Rev</span>
+              </div>
+              <span>Select</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Crime -->
+          <div class="coverage-card" data-module="CR" id="cardCR">
+            <div class="card-top">
+              <div>
+                <span class="module-code">CR</span>
+                <div class="card-title">Commercial Crime</div>
+              </div>
+              <span class="status-tag not-present">Not Present</span>
+            </div>
+
+            <div class="card-metrics">
+              <div class="metric-amount" style="font-size: 16px; color: var(--text-4);">Not Purchased</div>
+              <div class="metric-sub muted">Module omitted</div>
+            </div>
+
+            <div class="card-evidence-snippet">
+              <div class="ev-header-line">
+                <span>Evidence</span>
+                <span>Page 3, Decl.</span>
+              </div>
+              <p class="ev-quote-text">"Commercial Crime / Fidelity module: NOT PURCHASED. No coverage part attached to policy form."</p>
+            </div>
+
+            <div class="card-footer-info">
+              <div class="card-summary-pills">
+                <span style="font-size: 11px; color: var(--text-4);">0 Rules</span>
+              </div>
+              <span style="color: var(--text-4);">Ineligible</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECTION 2: 4-COLUMN RULES ACCORDION DECK -->
+      <section style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="rules-section-bar">
+          <div class="section-headline" style="margin-bottom: 0;">
+            <span>Evaluated Skill Rules</span>
+          </div>
+
+          <div class="rules-filter-pills">
+            <input type="text" class="rules-search" id="rulesSearchInput" placeholder="Filter rules...">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="opt">Optimization (6)</button>
+            <button class="filter-pill" data-filter="rev">Manual Review (2)</button>
+            <button class="filter-pill" data-filter="pass">Pass (16)</button>
+          </div>
+        </div>
+
+        <!-- 4 Columns Flex -->
+        <div class="columns-deck has-expanded" id="rulesDeck">
+
+          <!-- COLUMN 1: D&O (Expanded Default) -->
+          <div class="deck-col expanded" id="colDO" data-module="DO">
+            <div class="col-top-bar" onclick="toggleColumn('DO')">
+              <div class="col-title-group">
+                <span class="module-code">DO</span>
+                <span class="col-main-title">Private Company D&amp;O</span>
+                <span class="col-count-bubble">14</span>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            </div>
+
+            <!-- Compressed Strip View -->
+            <div class="col-strip-view" onclick="toggleColumn('DO')">
+              <span class="module-code">DO</span>
+              <div class="strip-pills">
+                <span class="strip-pill" style="background:var(--opt-bg); color:var(--opt-color);">3 Opt</span>
+                <span class="strip-pill" style="background:var(--rev-bg); color:var(--rev-color);">1 Rev</span>
+                <span class="strip-pill" style="background:var(--pass-bg); color:var(--pass-color);">10 Pass</span>
+              </div>
+              <span class="strip-vertical-title">Private Company D&amp;O</span>
+            </div>
+
+            <!-- Scroll Feed -->
+            <div class="col-scroll-feed">
+
+              <!-- Rule 1 (Optimization) -->
+              <div class="rule-item-card opt" id="rule-DO-002">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">DO-002</span>
+                    <div class="rule-headline">Bankruptcy Carve-Back to Insured vs. Insured</div>
+                  </div>
+                  <span class="rule-pill-badge opt">Optimization</span>
+                </div>
+                <p class="rule-finding-body">Finding: Insured vs. Insured exclusion identified; no qualifying bankruptcy-related carve-back identified.</p>
+                <div class="rule-recommendation-box">
+                  <div class="rec-label-eyebrow">Recommendation</div>
+                  Consider requesting bankruptcy-related carve-backs to the Insured vs. Insured exclusion for claims brought by a bankruptcy trustee, receiver, or creditors' committee.
+                </div>
+                <div class="rule-evidence-box">
+                  <div class="ev-meta-line">
+                    <span>Evidence (IVI Provision)</span>
+                    <button class="btn-doc-link" onclick="openPdfHighlight('page9')">Jump to Page 9 →</button>
+                  </div>
+                  <div class="ev-quote-string">"...no Claim shall be covered hereunder which is brought by or on behalf of the Company or any Insured Person against any other Insured Person..."</div>
+                </div>
+                <p class="rule-reasoning-body">Reasoning: The IVI exclusion as written contains no exception for claims brought by a bankruptcy trustee standing in the Company's shoes.</p>
+              </div>
+
+              <!-- Rule 2 (Optimization) -->
+              <div class="rule-item-card opt" id="rule-DO-004">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">DO-004</span>
+                    <div class="rule-headline">Application Severability CEO/CFO Carve-In</div>
+                  </div>
+                  <span class="rule-pill-badge opt">Optimization</span>
+                </div>
+                <p class="rule-finding-body">Finding: Knowledge possessed by CEO/CFO is imputed to all insured persons in the base policy form.</p>
+                <div class="rule-recommendation-box">
+                  <div class="rec-label-eyebrow">Recommendation</div>
+                  Request full severability wording ensuring misrepresentations in application only affect the individual with actual knowledge.
+                </div>
+                <div class="rule-evidence-box">
+                  <div class="ev-meta-line">
+                    <span>Evidence (Application Clause)</span>
+                    <button class="btn-doc-link" onclick="openPdfHighlight('page14')">Jump to Page 14 →</button>
+                  </div>
+                  <div class="ev-quote-string">"...knowledge possessed by Chief Executive Officer or Chief Financial Officer shall be imputed to the Company for purposes of determining coverage..."</div>
+                </div>
+              </div>
+
+              <!-- Rule 3 (Optimization) -->
+              <div class="rule-item-card opt" id="rule-DO-008">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">DO-008</span>
+                    <div class="rule-headline">Private For-Profit Outside Directorship (ODL)</div>
+                  </div>
+                  <span class="rule-pill-badge opt">Optimization</span>
+                </div>
+                <p class="rule-finding-body">Finding: Outside directorship coverage definition restricted strictly to non-profit entities.</p>
+                <div class="rule-recommendation-box">
+                  <div class="rec-label-eyebrow">Recommendation</div>
+                  Add endorsement extending Outside Entity definition to for-profit positions held at the Company's request with a $1,000,000 sublimit.
+                </div>
+              </div>
+
+              <!-- Rule 4 (Manual Review) -->
+              <div class="rule-item-card rev" id="rule-DO-003">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">DO-003</span>
+                    <div class="rule-headline">Antitrust Coverage Exclusion Carve-Back</div>
+                  </div>
+                  <span class="rule-pill-badge rev">Manual Review</span>
+                </div>
+                <p class="rule-finding-body">Reasoning: An Antitrust Exclusion was identified in the base form, but Endorsement No. 5 was not included in the submitted document, so it cannot be determined whether that endorsement restores coverage.</p>
+              </div>
+
+              <!-- Rule 5 (Pass) -->
+              <div class="rule-item-card pass">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">DO-001</span>
+                    <div class="rule-headline">Additional Dedicated Side A Limit</div>
+                  </div>
+                  <span class="rule-pill-badge pass">Pass</span>
+                </div>
+                <p class="rule-finding-body">Finding: Dedicated Side A-only Difference-in-Conditions Limit of $2,000,000 identified in Endorsement 7.</p>
+              </div>
+
+              <!-- Rule 6 (Pass) -->
+              <div class="rule-item-card pass">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">DO-005</span>
+                    <div class="rule-headline">Pollution Exclusion Carve-Back</div>
+                  </div>
+                  <span class="rule-pill-badge pass">Pass</span>
+                </div>
+                <p class="rule-finding-body">Finding: Pollution exclusion contains carve-back for shareholder derivative actions.</p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- COLUMN 2: EPLI -->
+          <div class="deck-col" id="colEPLI" data-module="EPLI">
+            <div class="col-top-bar" onclick="toggleColumn('EPLI')">
+              <div class="col-title-group">
+                <span class="module-code">EPLI</span>
+                <span class="col-main-title">Employment Practices</span>
+                <span class="col-count-bubble">7</span>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            </div>
+
+            <!-- Mini Strip -->
+            <div class="col-strip-view" onclick="toggleColumn('EPLI')">
+              <span class="module-code">EPLI</span>
+              <div class="strip-pills">
+                <span class="strip-pill" style="background:var(--opt-bg); color:var(--opt-color);">2 Opt</span>
+                <span class="strip-pill" style="background:var(--pass-bg); color:var(--pass-color);">5 Pass</span>
+              </div>
+              <span class="strip-vertical-title">Employment Practices</span>
+            </div>
+
+            <!-- Feed -->
+            <div class="col-scroll-feed">
+              <div class="rule-item-card opt" id="rule-EPLI-001">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">EPLI-001</span>
+                    <div class="rule-headline">FLSA Wage &amp; Hour Defense Sublimit</div>
+                  </div>
+                  <span class="rule-pill-badge opt">Optimization</span>
+                </div>
+                <p class="rule-finding-body">Finding: Wage &amp; Hour / FLSA claims fully excluded without defense cost sublimit carve-back.</p>
+                <div class="rule-recommendation-box">
+                  <div class="rec-label-eyebrow">Recommendation</div>
+                  Negotiate $250,000 Wage &amp; Hour defense-only carve-back endorsement.
+                </div>
+              </div>
+
+              <div class="rule-item-card opt">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">EPLI-002</span>
+                    <div class="rule-headline">Biometric Privacy (BIPA) Coverage</div>
+                  </div>
+                  <span class="rule-pill-badge opt">Optimization</span>
+                </div>
+                <p class="rule-finding-body">Finding: Absolute biometric data exclusion applied by endorsement.</p>
+                <div class="rule-recommendation-box">
+                  <div class="rec-label-eyebrow">Recommendation</div>
+                  Request deletion of BIPA exclusion or sublimit for employee timeclock scanning.
+                </div>
+              </div>
+
+              <div class="rule-item-card pass">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">EPLI-003</span>
+                    <div class="rule-headline">Third-Party Discrimination Coverage</div>
+                  </div>
+                  <span class="rule-pill-badge pass">Pass</span>
+                </div>
+                <p class="rule-finding-body">Finding: Third-party liability included with full policy limit.</p>
+              </div>
+
+              <div class="rule-item-card pass">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">EPLI-004</span>
+                    <div class="rule-headline">Independent Contractor Inclusion</div>
+                  </div>
+                  <span class="rule-pill-badge pass">Pass</span>
+                </div>
+                <p class="rule-finding-body">Finding: Independent contractors covered under definition of Employee.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMN 3: FIDUCIARY -->
+          <div class="deck-col" id="colFI" data-module="FI">
+            <div class="col-top-bar" onclick="toggleColumn('FI')">
+              <div class="col-title-group">
+                <span class="module-code">FI</span>
+                <span class="col-main-title">Fiduciary Liability</span>
+                <span class="col-count-bubble">3</span>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            </div>
+
+            <!-- Mini Strip -->
+            <div class="col-strip-view" onclick="toggleColumn('FI')">
+              <span class="module-code">FI</span>
+              <div class="strip-pills">
+                <span class="strip-pill" style="background:var(--opt-bg); color:var(--opt-color);">1 Opt</span>
+                <span class="strip-pill" style="background:var(--rev-bg); color:var(--rev-color);">1 Rev</span>
+              </div>
+              <span class="strip-vertical-title">Fiduciary Liability</span>
+            </div>
+
+            <!-- Feed -->
+            <div class="col-scroll-feed">
+              <div class="rule-item-card opt">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">FI-001</span>
+                    <div class="rule-headline">HIPAA &amp; PPACA Penalties Sublimit</div>
+                  </div>
+                  <span class="rule-pill-badge opt">Optimization</span>
+                </div>
+                <p class="rule-finding-body">Finding: Fiduciary coverage lacks specific 502(c) civil penalties carve-back.</p>
+                <div class="rule-recommendation-box">
+                  <div class="rec-label-eyebrow">Recommendation</div>
+                  Ensure $500,000 sublimit for ACA and HIPAA voluntary compliance penalties is bound.
+                </div>
+              </div>
+
+              <div class="rule-item-card rev">
+                <div class="rule-header-row">
+                  <div>
+                    <span class="rule-id-label">FI-002</span>
+                    <div class="rule-headline">ESOP / Proprietary Fund Exclusion</div>
+                  </div>
+                  <span class="rule-pill-badge rev">Manual Review</span>
+                </div>
+                <p class="rule-finding-body">Reasoning: Form contains employer securities exclusion; verify whether company sponsors 401(k) company stock.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMN 4: CRIME -->
+          <div class="deck-col" id="colCR" data-module="CR">
+            <div class="col-top-bar" onclick="toggleColumn('CR')">
+              <div class="col-title-group">
+                <span class="module-code">CR</span>
+                <span class="col-main-title">Commercial Crime</span>
+                <span class="col-count-bubble" style="color: var(--text-4);">0</span>
+              </div>
+            </div>
+
+            <!-- Mini Strip -->
+            <div class="col-strip-view" onclick="toggleColumn('CR')">
+              <span class="module-code">CR</span>
+              <div class="strip-pills">
+                <span class="strip-pill" style="background:#f1f5f9; color:var(--text-3);">0</span>
+              </div>
+              <span class="strip-vertical-title">Commercial Crime</span>
+            </div>
+
+            <!-- Feed -->
+            <div class="col-scroll-feed">
+              <div class="empty-state-view">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg>
+                <div style="font-size: 14px; font-weight: 700; color: var(--navy); margin-top: 6px;">Coverage Not Present</div>
+                <p style="font-size: 12.5px; line-height: 1.5; max-width: 200px;">Crime rules were skipped by evaluation chain because module was not purchased.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- 3. RIGHT PDF SIDEBAR (420px) -->
+  <aside class="pdf-sidebar open" id="pdfSidebar">
+    <div class="pdf-bar-header">
+      <span class="pdf-header-title">004_Acme_DO_Policy.pdf</span>
+      <button class="btn-pdf-close" id="closePdfBtn" title="Close PDF viewer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="pdf-document-scroll">
+      <div class="pdf-sheet" id="pdfPage9">
+        <div class="pdf-section-title">SECTION VI — EXCLUSIONS &amp; LIMITATIONS</div>
+        <p>C. The Insurer shall not be liable to make any payment for Loss in connection with any Claim made against any Insured Person:</p>
+        <p style="margin-top: 6px;">(1) by or on behalf of the Company or any Insured Person, except for derivative suits brought without the solicitation of any director;</p>
+        <p class="pdf-text-highlight" style="margin-top: 8px;">
+          "...no Claim shall be covered hereunder which is brought by or on behalf of the Company or any Insured Person against any other Insured Person, without carve-back for bankruptcy trustees or receivers..."
+        </p>
+        <p style="margin-top: 8px;">(2) brought by any security holder of the Company unless such Claim is brought totally independent of any Insured Person.</p>
+        <div class="pdf-footer-page">Page 9 of 34</div>
+      </div>
+
+      <div class="pdf-sheet" id="pdfPage14">
+        <div class="pdf-section-title">SECTION VIII — APPLICATION &amp; SEVERABILITY</div>
+        <p>Item 2. Representation and Severability:</p>
+        <p class="pdf-text-highlight" style="margin-top: 6px;">
+          "...knowledge possessed by the Chief Executive Officer or Chief Financial Officer shall be imputed to the Company for purposes of determining coverage under this Policy..."
+        </p>
+        <p style="margin-top: 8px;">Item 3. Non-Rescindability shall apply except in the event of proven fraudulent intent established by final adjudication.</p>
+        <div class="pdf-footer-page">Page 14 of 34</div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  // DOM Elements
+  const deck = document.getElementById('rulesDeck');
+  const cols = {
+    DO: document.getElementById('colDO'),
+    EPLI: document.getElementById('colEPLI'),
+    FI: document.getElementById('colFI'),
+    CR: document.getElementById('colCR')
+  };
+  const cards = {
+    DO: document.getElementById('cardDO'),
+    EPLI: document.getElementById('cardEPLI'),
+    FI: document.getElementById('cardFI'),
+    CR: document.getElementById('cardCR')
+  };
+
+  let activeCol = 'DO';
+
+  function toggleColumn(key) {
+    if (activeCol === key) {
+      deck.classList.remove('has-expanded');
+      Object.values(cols).forEach(c => c.classList.remove('expanded'));
+      Object.values(cards).forEach(s => s.classList.remove('selected'));
+      activeCol = null;
+    } else {
+      deck.classList.add('has-expanded');
+      Object.keys(cols).forEach(k => {
+        if (k === key) {
+          cols[k].classList.add('expanded');
+          if (cards[k]) cards[k].classList.add('selected');
+        } else {
+          cols[k].classList.remove('expanded');
+          if (cards[k]) cards[k].classList.remove('selected');
+        }
+      });
+      activeCol = key;
+    }
+  }
+
+  // Bind Coverage Cards to Column Focus
+  Object.keys(cards).forEach(k => {
+    cards[k].addEventListener('click', () => toggleColumn(k));
+  });
+
+  // Reset Deck
+  document.getElementById('resetDeckBtn').addEventListener('click', () => {
+    deck.classList.remove('has-expanded');
+    Object.values(cols).forEach(c => c.classList.remove('expanded'));
+    Object.values(cards).forEach(s => s.classList.remove('selected'));
+    activeCol = null;
+    document.querySelectorAll('.rule-item-card').forEach(c => c.style.display = 'flex');
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+    document.querySelector('.filter-pill[data-filter="all"]').classList.add('active');
+  });
+
+  // Filter Pills
+  document.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.rule-item-card').forEach(card => {
+        card.style.display = (f === 'all' || card.classList.contains(f)) ? 'flex' : 'none';
+      });
+    });
+  });
+
+  // Search Input
+  document.getElementById('rulesSearchInput').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('.rule-item-card').forEach(card => {
+      card.style.display = card.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+    });
+  });
+
+  // Toggle Left Copilot Sidebar
+  const copilotSidebar = document.getElementById('copilotSidebar');
+  document.getElementById('toggleCopilotBtn').addEventListener('click', () => {
+    copilotSidebar.classList.toggle('collapsed');
+  });
+
+  // Toggle Right PDF Sidebar
+  const pdfSidebar = document.getElementById('pdfSidebar');
+  const togglePdfBtn = document.getElementById('togglePdfBtn');
+  togglePdfBtn.addEventListener('click', () => {
+    pdfSidebar.classList.toggle('open');
+    togglePdfBtn.classList.toggle('active');
+  });
+  document.getElementById('closePdfBtn').addEventListener('click', () => {
+    pdfSidebar.classList.remove('open');
+    togglePdfBtn.classList.remove('active');
+  });
+
+  // Jump to Document Citation
+  function openPdfHighlight(pageId) {
+    pdfSidebar.classList.add('open');
+    togglePdfBtn.classList.add('active');
+    setTimeout(() => {
+      const target = document.getElementById(pageId === 'page9' ? 'pdfPage9' : 'pdfPage14');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }
+</script>
+</body>
+</html>

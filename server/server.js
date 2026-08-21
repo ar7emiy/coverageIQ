@@ -27,21 +27,24 @@ function serveStatic(req, res) {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
-  // List every submission (complete or not) — the dropdown needs the
-  // incomplete ones too, to render the "Missing input/output file" warning.
+  // List every submission (PDF-only, analysis-only, or both) — the
+  // dropdown shows all of them, tagged by whichever side is missing.
   if (url.pathname === '/api/submissions') {
     const submissions = scanSubmissions().map(({ prefix, filename, input, output }) =>
       ({ prefix, filename, input, output }));
     return sendJson(res, 200, submissions);
   }
 
-  // Coverage snapshot + flags for one complete pair, parsed from its
-  // analysis .md on demand.
+  // Coverage snapshot + flags for one submission, parsed from its analysis
+  // .md on demand. A submission with no analysis yet (PDF uploaded, not
+  // yet reviewed) is not an error — it just returns empty coverage/flags;
+  // only a wholly unknown prefix 404s.
   const flagsMatch = url.pathname.match(/^\/api\/submissions\/(\d+)$/);
   if (flagsMatch) {
     const prefix = flagsMatch[1];
     const sub = scanSubmissions().find(s => s.prefix === prefix);
-    if (!sub || !sub.input || !sub.output) return sendJson(res, 404, { error: 'Not a complete pair' });
+    if (!sub) return sendJson(res, 404, { error: 'Unknown submission' });
+    if (!sub.output) return sendJson(res, 200, { prefix, filename: sub.filename, coverage: [], flags: [] });
     const mdPath = path.join(OUTPUT_DIR, sub.outputFile);
     fs.readFile(mdPath, 'utf8', (err, text) => {
       if (err) return sendJson(res, 500, { error: 'Could not read analysis file' });
