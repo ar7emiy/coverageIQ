@@ -11,12 +11,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from config import PORT, OUTPUT_DIR
+from config import PORT, INPUT_DIR, OUTPUT_DIR
 from file_scanner import scan_submissions
 from parse_analysis import parse_analysis_markdown
 
 PUBLIC_DIR = (Path(__file__).resolve().parent.parent / 'public').resolve()
 PREFIX_RE = re.compile(r'^/api/submissions/(\d+)$')
+PDF_RE = re.compile(r'^/api/submissions/(\d+)/pdf$')
 MIME = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml'}
 
 
@@ -86,6 +87,32 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send_json(500, {'error': 'Could not read analysis file'})
             parsed = parse_analysis_markdown(text)
             return self._send_json(200, {'prefix': prefix, 'filename': sub['filename'], **parsed})
+
+        # Raw PDF passthrough — lets the PDF pane show the real source
+        # document via the browser's native PDF viewer, independent of the
+        # evidence-highlight reconstruction (which needs analysis to exist
+        # first). Used in particular when a PDF has been uploaded but no
+        # analysis exists yet.
+        m = PDF_RE.match(path)
+        if m:
+            prefix = m.group(1)
+            sub = next((s for s in scan_submissions() if s['prefix'] == prefix), None)
+            if not sub or not sub['input']:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                data = (INPUT_DIR / sub['input_file']).read_bytes()
+            except OSError:
+                self.send_response(500)
+                self.end_headers()
+                return
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/pdf')
+            self.send_header('Content-Length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
 
         return self._serve_static(path)
 

@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoverageIQ Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#062b43; --navy-deep:#031c2c; --navy-light:#0d4063;
+    --ice:#a4c8e1; --ice-tint:#eaf3f8;
+    --future:#1a7f5a; --future-bg:#eef8f3; --future-border:rgba(26,127,90,0.3);
+    --gap:#c94a29; --gap-bg:#fdf3f0; --gap-border:rgba(201,74,41,0.3);
+    --bg:#ffffff; --surface:#ffffff; --surface-2:#eef2f6;
+    --ink-1:#062b43; --ink-2:#3a566a; --ink-3:#6b8699;
+    --border:rgba(6,43,67,0.14); --border-soft:rgba(6,43,67,0.08); --border-strong:rgba(6,43,67,0.22);
+    --diagram-ink: var(--navy);
+    --shadow: 0 1px 2px rgba(6,43,67,0.04), 0 6px 20px rgba(6,43,67,0.06);
+    --font-display:'Space Grotesk',sans-serif;
+    --font-main:'Plus Jakarta Sans',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg); color:var(--ink-1); font-family:var(--font-main);
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  /* ---------- masthead ---------- */
+  .masthead{ padding:56px 0 28px; }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--ice); background:var(--navy); display:inline-block;
+    padding:4px 10px; border-radius:20px; margin-bottom:18px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:700; font-size:clamp(28px,4vw,40px);
+    letter-spacing:-0.01em; margin:0 0 14px; color:var(--ink-1); text-wrap:balance; max-width:16ch;
+  }
+  .dek{ font-size:16px; color:var(--ink-2); max-width:62ch; margin:0; }
+
+  /* ---------- tabs ---------- */
+  .tabbar{
+    position:sticky; top:0; z-index:10; display:flex; gap:4px; background:var(--bg);
+    border-bottom:1px solid var(--border); padding:14px 0; margin-bottom:40px;
+  }
+  .tab{
+    font-family:var(--font-main); font-size:13.5px; font-weight:600; color:var(--ink-3);
+    background:none; border:none; padding:9px 16px; border-radius:8px; cursor:pointer;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .tab:hover{ background:var(--surface-2); color:var(--ink-1); }
+  .tab.active{ background:var(--navy); color:#fff; }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:fade 0.25s ease; }
+  @keyframes fade{ from{ opacity:0; transform:translateY(4px);} to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .panel.active{ animation:none; } }
+
+  /* ---------- state blocks ---------- */
+  .state-block{ margin-bottom:56px; }
+  .state-head{ display:flex; align-items:baseline; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  h2{ font-family:var(--font-display); font-size:20px; font-weight:700; margin:0; color:var(--ink-1); }
+  .state-tag{
+    font-family:var(--font-mono); font-size:10.5px; font-weight:600; letter-spacing:0.05em;
+    text-transform:uppercase; padding:3px 10px; border-radius:20px; flex-shrink:0;
+  }
+  .state-tag.current{ background:var(--surface-2); color:var(--ink-2); border:1px solid var(--border); }
+  .state-tag.future{ background:var(--future-bg); color:var(--future); border:1px solid var(--future-border); }
+
+  figure{ margin:0 0 14px; }
+  .diagram-frame{
+    background:var(--surface); border:1px solid var(--border-strong,var(--border)); border-radius:14px;
+    padding:20px clamp(8px,3vw,28px); box-shadow:var(--shadow); overflow-x:auto;
+  }
+  .diagram-frame svg{ display:block; max-width:100%; height:auto; margin:0 auto; color:var(--diagram-ink); }
+  figcaption{ font-size:13.5px; color:var(--ink-3); max-width:68ch; margin-top:12px; }
+  figcaption strong{ color:var(--ink-2); font-weight:600; }
+
+  .diagram-note{
+    font-size:12.5px; color:var(--ink-3); background:var(--surface-2); border-left:3px solid var(--gap);
+    padding:10px 14px; border-radius:0 8px 8px 0; margin-top:14px; max-width:68ch;
+  }
+  .diagram-note strong{ color:var(--gap); font-weight:600; }
+
+  /* ---------- portability table ---------- */
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; margin-top:8px; }
+  caption{ text-align:left; font-size:12.5px; color:var(--ink-3); margin-bottom:10px; caption-side:top; }
+  th{
+    font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em;
+    color:var(--ink-3); text-align:left; padding:8px 12px; border-bottom:1px solid var(--border); font-weight:600;
+  }
+  td{ padding:10px 12px; border-bottom:1px solid var(--border-soft); color:var(--ink-2); vertical-align:top; }
+  td:first-child{ font-family:var(--font-mono); font-weight:600; color:var(--ink-1); white-space:nowrap; }
+  td.azure{ color:var(--navy); font-weight:600; }
+  .table-wrap{ overflow-x:auto; }
+
+  /* ---------- callout ---------- */
+  .callout{
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:14px;
+    padding:22px 24px; margin-top:32px; box-shadow:var(--shadow);
+  }
+  .callout h3{ font-family:var(--font-display); font-size:16px; margin:0 0 12px; color:var(--ink-1); }
+  .callout p{ font-size:14px; color:var(--ink-2); margin:0 0 12px; max-width:70ch; }
+  .callout p:last-child{ margin-bottom:0; }
+  .verdict{
+    display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:12px;
+    font-weight:600; color:var(--future); background:var(--future-bg); border:1px solid var(--future-border);
+    padding:4px 12px; border-radius:20px; margin-bottom:14px;
+  }
+
+  /* ---------- diagram text helpers ---------- */
+  .box-title{ font-family:var(--font-display); font-weight:700; }
+  .box-sub{ font-family:var(--font-main); font-weight:500; opacity:0.72; }
+  .arrow-label{ font-family:var(--font-mono); opacity:0.75; }
+  .swap-badge{ font-family:var(--font-mono); font-weight:600; letter-spacing:0.04em; }
+
+  @media (max-width:640px){
+    .tabbar{ overflow-x:auto; }
+    .tab{ white-space:nowrap; }
+  }
+</style>
+
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <span class="eyebrow">CoverageIQ · System Architecture</span>
+    <h1>How it works today, and where it's headed</h1>
+    <p class="dek">One system, three views: the plain-language version, the technical build (current and production), and the operating model behind how the rule library itself grows.</p>
+  </header>
+
+  <nav class="tabbar" role="tablist">
+    <button class="tab active" data-tab="exec" role="tab" aria-selected="true">Executive Overview</button>
+    <button class="tab" data-tab="tech" role="tab" aria-selected="false">Technical Architecture</button>
+    <button class="tab" data-tab="scale" role="tab" aria-selected="false">Scaling the Rule Library</button>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- EXECUTIVE PANEL -->
+  <!-- ============================================================ -->
+  <section id="panel-exec" class="panel active">
+
+    <div class="state-block">
+      <div class="state-head"><span class="state-tag current">Today</span><h2>How a policy gets reviewed right now</h2></div>
+      <figure>
+        <div class="diagram-frame">
+          <svg viewBox="0 0 920 190" role="img" aria-label="A broker uploads a policy PDF into Microsoft 365 Copilot, which reviews it against the CoverageIQ skill library, producing findings that appear in a review dashboard for the broker to act on.">
+            <defs>
+              <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <!-- boxes -->
+            <g>
+              <rect x="10" y="45" width="190" height="92" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="105" y="82" text-anchor="middle" class="box-title" font-size="13.5">Broker uploads</text>
+              <text x="105" y="102" text-anchor="middle" class="box-sub" font-size="12">a policy PDF</text>
+            </g>
+            <g>
+              <rect x="253" y="38" width="200" height="106" rx="10" fill="var(--ice-tint)" stroke="currentColor" stroke-width="1.5"/>
+              <text x="353" y="70" text-anchor="middle" class="box-title" font-size="13">Microsoft 365 Copilot</text>
+              <text x="353" y="90" text-anchor="middle" class="box-sub" font-size="11.5">+ CoverageIQ skill library</text>
+              <text x="353" y="112" text-anchor="middle" class="box-sub" font-size="11.5">reviews it, rule by rule</text>
+            </g>
+            <g>
+              <rect x="506" y="45" width="190" height="92" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="601" y="82" text-anchor="middle" class="box-title" font-size="13.5">Findings appear</text>
+              <text x="601" y="102" text-anchor="middle" class="box-sub" font-size="12">in the review dashboard</text>
+            </g>
+            <g>
+              <rect x="749" y="45" width="161" height="92" rx="10" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
+              <text x="829" y="82" text-anchor="middle" class="box-title" font-size="13.5" fill="var(--future)">Broker acts</text>
+              <text x="829" y="102" text-anchor="middle" class="box-sub" font-size="12" fill="var(--future)">on flagged gaps</text>
+            </g>
+            <!-- arrows -->
+            <line x1="200" y1="91" x2="251" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
+            <text x="225" y="80" text-anchor="middle" class="arrow-label" font-size="10">in chat</text>
+            <line x1="453" y1="91" x2="504" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
+            <text x="478" y="80" text-anchor="middle" class="arrow-label" font-size="10">minutes</text>
+            <line x1="696" y1="91" x2="747" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
+            <text x="722" y="80" text-anchor="middle" class="arrow-label" font-size="10">evidence-backed</text>
+            <text x="460" y="175" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="currentColor" opacity="0.55">works inside a tool your team already uses — nothing new to learn</text>
+          </svg>
+        </div>
+        <figcaption><strong>Today's pilot:</strong> a broker drops a policy into Copilot and gets a structured, evidence-cited review back in the same chat — every finding traces to the exact policy language behind it, not a black-box score.</figcaption>
+      </figure>
+      <div class="diagram-note"><strong>Manual today:</strong> the upload step is a person placing the file — the production version (right tab) automates that hand-off entirely.</div>
+    </div>
+
+    <div class="state-block">
+      <div class="state-head"><span class="state-tag future">Where we're headed</span><h2>Automatic review, across the whole book</h2></div>
+      <figure>
+        <div class="diagram-frame">
+          <svg viewBox="0 0 920 190" role="img" aria-label="The team's policy repository feeds new documents in automatically, CoverageIQ reviews them at scale in the cloud, and findings flow into the tools the team already uses.">
+            <defs>
+              <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <g>
+              <rect x="10" y="45" width="190" height="92" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="105" y="82" text-anchor="middle" class="box-title" font-size="13">Your policy</text>
+              <text x="105" y="102" text-anchor="middle" class="box-sub" font-size="12">repository</text>
+            </g>
+            <g>
+              <rect x="253" y="45" width="190" height="92" rx="10" fill="none" stroke-dasharray="5 4" stroke="currentColor" stroke-width="1.5"/>
+              <text x="348" y="82" text-anchor="middle" class="box-title" font-size="13">Picked up</text>
+              <text x="348" y="102" text-anchor="middle" class="box-sub" font-size="12">automatically</text>
+            </g>
+            <g>
+              <rect x="496" y="38" width="210" height="106" rx="10" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
+              <text x="601" y="70" text-anchor="middle" class="box-title" font-size="13" fill="var(--future)">CoverageIQ reviews it</text>
+              <text x="601" y="90" text-anchor="middle" class="box-sub" font-size="11.5" fill="var(--future)">at scale, cloud-hosted</text>
+              <text x="601" y="112" text-anchor="middle" class="box-sub" font-size="11.5" fill="var(--future)">every policy, continuously</text>
+            </g>
+            <g>
+              <rect x="759" y="45" width="151" height="92" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="834" y="82" text-anchor="middle" class="box-title" font-size="13">Findings sync to</text>
+              <text x="834" y="102" text-anchor="middle" class="box-sub" font-size="12">your existing tools</text>
+            </g>
+            <line x1="200" y1="91" x2="251" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+            <line x1="443" y1="91" x2="494" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+            <line x1="706" y1="91" x2="757" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
+            <text x="835" y="165" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="currentColor" opacity="0.55">no manual step, anywhere in this line</text>
+          </svg>
+        </div>
+        <figcaption><strong>The change that matters:</strong> nothing about the review quality changes — the same skill library, the same evidence-first findings. What changes is that it runs on your whole book automatically, hosted on infrastructure your team controls.</figcaption>
+      </figure>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TECHNICAL PANEL -->
+  <!-- ============================================================ -->
+  <section id="panel-tech" class="panel">
+
+    <div class="state-block">
+      <div class="state-head"><span class="state-tag current">Current build</span><h2>POC architecture — as it runs today</h2></div>
+      <figure>
+        <div class="diagram-frame">
+          <svg viewBox="0 0 940 300" role="img" aria-label="A person places a PDF in an input folder. An external Microsoft 365 Copilot agent reads the skill library, evaluates the document, and writes a markdown analysis file to an output folder. A local zero-dependency HTTP server polls both folders every 3 seconds, pairs files by numeric prefix, parses the markdown, and serves it to a vanilla JavaScript frontend that renders the findings and highlights matching text on the real rendered PDF.">
+            <defs>
+              <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <!-- row 1 -->
+            <rect x="10" y="16" width="150" height="72" rx="9" fill="none" stroke-dasharray="5 4" stroke="currentColor" stroke-width="1.5"/>
+            <text x="85" y="46" text-anchor="middle" class="box-title" font-size="12">Human</text>
+            <text x="85" y="63" text-anchor="middle" class="box-sub" font-size="10.5">places PDF in /input</text>
+
+            <rect x="230" y="10" width="230" height="84" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-width="1.5"/>
+            <text x="345" y="36" text-anchor="middle" class="box-title" font-size="12">M365 Copilot agent</text>
+            <text x="345" y="53" text-anchor="middle" class="box-sub" font-size="10.5">reads skills/*.md library</text>
+            <text x="345" y="68" text-anchor="middle" class="box-sub" font-size="10.5">RULE-000 → gated DO-*/EPLI-*</text>
+            <text x="345" y="83" text-anchor="middle" class="box-sub" font-size="10.5" font-family="var(--font-mono)">writes {prefix}_analysis.md</text>
+
+            <rect x="590" y="16" width="150" height="72" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="665" y="46" text-anchor="middle" class="box-title" font-size="12">/output folder</text>
+            <text x="665" y="63" text-anchor="middle" class="box-sub" font-size="10.5">markdown analysis</text>
+
+            <line x1="160" y1="52" x2="228" y2="52" stroke="currentColor" stroke-width="1.5" marker-end="url(#a3)"/>
+            <line x1="460" y1="52" x2="588" y2="52" stroke="currentColor" stroke-width="1.5" marker-end="url(#a3)"/>
+
+            <!-- row 2: server -->
+            <rect x="290" y="150" width="360" height="80" rx="9" fill="var(--surface-2)" stroke="currentColor" stroke-width="1.5"/>
+            <text x="470" y="176" text-anchor="middle" class="box-title" font-size="12.5">Local HTTP server (Node or Python)</text>
+            <text x="470" y="194" text-anchor="middle" class="box-sub" font-size="10.5">polls /input + /output every 3s, pairs by numeric prefix</text>
+            <text x="470" y="210" text-anchor="middle" class="box-sub" font-size="10.5">parses markdown → JSON — no database</text>
+
+            <path d="M665,88 C665,120 480,120 480,148" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#a3)"/>
+            <text x="640" y="122" text-anchor="middle" class="arrow-label" font-size="10">polls</text>
+            <path d="M85,88 C85,150 288,175 288,182" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#a3)" opacity="0.85"/>
+            <text x="130" y="150" text-anchor="middle" class="arrow-label" font-size="10">polls</text>
+
+            <!-- row 3: frontend -->
+            <rect x="330" y="266" width="280" height="1" fill="none"/>
+            <path d="M470,230 C470,250 470,250 470,266" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#a3)"/>
+            <rect x="290" y="266" width="360" height="30" rx="8" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
+            <text x="470" y="286" text-anchor="middle" class="box-title" font-size="12" fill="var(--future)">Frontend — findings + fuzzy-matched PDF evidence highlighting</text>
+          </svg>
+        </div>
+        <figcaption><strong>What this proves:</strong> the review logic and the evidence-highlighting UX work end-to-end against real policy documents. <strong>What it isn't:</strong> production infrastructure.</figcaption>
+      </figure>
+      <div class="diagram-note"><strong>Known limits, by design:</strong> no database (markdown files are the data layer), no queue, no auth, single local process, manual file placement. Built to prove review quality and UX, not to carry load.</div>
+    </div>
+
+    <div class="state-block">
+      <div class="state-head"><span class="state-tag future">Production MVP</span><h2>Azure-hosted, portable by design</h2></div>
+      <figure>
+        <div class="diagram-frame">
+          <svg viewBox="0 0 620 940" role="img" aria-label="The team's policy repository triggers a sync into blob storage, which enqueues a processing job. A containerized worker pool pulls the job, extracts text with OCR fallback, loads the skill library, and calls a pluggable AI model provider. Structured findings are written to a results store and served through an API to the frontend, with Azure AD identity and Azure Monitor observability as cross-cutting layers. The queue, compute, model, and store layers are each swappable for equivalent services on any stack.">
+            <defs>
+              <marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <!-- 1 repo -->
+            <rect x="160" y="10" width="300" height="66" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="310" y="37" text-anchor="middle" class="box-title" font-size="12.5">Team's policy repository</text>
+            <text x="310" y="55" text-anchor="middle" class="box-sub" font-size="10.5">SharePoint · Blob · document management system</text>
+            <line x1="310" y1="76" x2="310" y2="104" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="345" y="94" class="arrow-label" font-size="10">watches for new/changed files</text>
+
+            <!-- 2 trigger -->
+            <rect x="190" y="104" width="240" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="310" y="137" text-anchor="middle" class="box-title" font-size="12">Sync trigger — Azure Event Grid</text>
+            <line x1="310" y1="160" x2="310" y2="188" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+
+            <!-- 3 blob -->
+            <rect x="190" y="188" width="240" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="310" y="212" text-anchor="middle" class="box-title" font-size="12">Blob Storage</text>
+            <text x="310" y="228" text-anchor="middle" class="box-sub" font-size="10.5">raw intake container</text>
+            <line x1="310" y1="244" x2="310" y2="272" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="360" y="262" class="arrow-label" font-size="10">enqueues a job</text>
+
+            <!-- 4 queue (swappable) -->
+            <rect x="170" y="272" width="280" height="60" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+            <text x="310" y="298" text-anchor="middle" class="box-title" font-size="12.5">Queue — Azure Service Bus</text>
+            <text x="310" y="315" text-anchor="middle" class="box-sub" font-size="10">decouples ingestion from processing</text>
+            <line x1="310" y1="332" x2="310" y2="360" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="345" y="350" class="arrow-label" font-size="10">pulled by</text>
+
+            <!-- 5 workers (swappable) -->
+            <rect x="130" y="360" width="360" height="88" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+            <text x="310" y="386" text-anchor="middle" class="box-title" font-size="12.5">Worker pool — Azure Container Apps</text>
+            <text x="310" y="404" text-anchor="middle" class="box-sub" font-size="10.5">extracts text (+ OCR fallback for scans)</text>
+            <text x="310" y="419" text-anchor="middle" class="box-sub" font-size="10.5">loads the versioned skill library</text>
+            <text x="310" y="434" text-anchor="middle" class="box-sub" font-size="10.5">containerized — deployable to any host</text>
+            <line x1="310" y1="448" x2="310" y2="476" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="335" y="466" class="arrow-label" font-size="10">prompts</text>
+
+            <!-- 6 model (swappable) -->
+            <rect x="150" y="476" width="320" height="66" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+            <text x="310" y="502" text-anchor="middle" class="box-title" font-size="12.5">AI model provider — Azure OpenAI (default)</text>
+            <text x="310" y="519" text-anchor="middle" class="box-sub" font-size="10.5">pluggable — any provider behind one interface</text>
+            <line x1="310" y1="542" x2="310" y2="570" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="365" y="560" class="arrow-label" font-size="10">structured findings</text>
+
+            <!-- 7 store (swappable) -->
+            <rect x="170" y="570" width="280" height="60" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+            <text x="310" y="596" text-anchor="middle" class="box-title" font-size="12.5">Results store — Cosmos DB</text>
+            <text x="310" y="613" text-anchor="middle" class="box-sub" font-size="10.5">queryable, historical, trendable</text>
+            <line x1="310" y1="630" x2="310" y2="658" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="340" y="648" class="arrow-label" font-size="10">served via</text>
+
+            <!-- 8 API + frontend -->
+            <rect x="190" y="658" width="240" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="310" y="682" text-anchor="middle" class="box-title" font-size="12">API layer</text>
+            <text x="310" y="698" text-anchor="middle" class="box-sub" font-size="10.5">same contract the current frontend already speaks</text>
+            <line x1="310" y1="714" x2="310" y2="742" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+
+            <rect x="150" y="742" width="320" height="60" rx="9" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
+            <text x="310" y="768" text-anchor="middle" class="box-title" font-size="12.5" fill="var(--future)">Frontend</text>
+            <text x="310" y="785" text-anchor="middle" class="box-sub" font-size="10.5" fill="var(--future)">this UI, unchanged — or embedded in Teams/SharePoint</text>
+
+            <!-- cross-cutting -->
+            <rect x="20" y="290" width="118" height="380" rx="9" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>
+            <text x="79" y="470" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.7" transform="rotate(-90 79 470)">Azure AD — identity &amp; SSO</text>
+
+            <rect x="482" y="290" width="118" height="380" rx="9" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>
+            <text x="541" y="470" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.7" transform="rotate(90 541 470)">Azure Monitor — logs &amp; rule telemetry</text>
+
+            <!-- legend -->
+            <rect x="150" y="838" width="18" height="14" rx="3" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="4 3" stroke-width="1.3"/>
+            <text x="176" y="849" class="box-sub" font-size="11">dashed = swappable for an equivalent on any stack (see table below)</text>
+          </svg>
+        </div>
+        <figcaption><strong>Same skill library, same output contract</strong> as the current build — this replaces the file-polling loop with real ingestion at scale, not the review logic itself.</figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Every dashed layer above is provider-abstracted and containerized. Azure is the recommended default, not a lock-in.</caption>
+          <thead>
+            <tr><th>Layer</th><th>Azure (default)</th><th>Also runs on</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Queue</td><td class="azure">Service Bus</td><td>AWS SQS · RabbitMQ · GCP Pub/Sub</td></tr>
+            <tr><td>Compute</td><td class="azure">Container Apps</td><td>AWS Fargate · Kubernetes, any cloud</td></tr>
+            <tr><td>Model provider</td><td class="azure">Azure OpenAI Service</td><td>Anthropic API · OpenAI · any compatible endpoint</td></tr>
+            <tr><td>Results store</td><td class="azure">Cosmos DB</td><td>PostgreSQL · DynamoDB · Cloud SQL</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SCALING PANEL -->
+  <!-- ============================================================ -->
+  <section id="panel-scale" class="panel">
+    <div class="state-block">
+      <div class="state-head"><h2>How the rule library grows</h2></div>
+      <p class="dek" style="margin-bottom:24px;">Not a model-training problem — an operating model. A forward-deployed team embeds with each customer's own coverage specialists, and the rules get better because the people who know the risk best helped write them.</p>
+
+      <figure>
+        <div class="diagram-frame">
+          <svg viewBox="0 0 940 320" role="img" aria-label="A five-stage repeating cycle: engage with a customer's subject matter expert team for one coverage line, learn the real policy language and edge cases specific to that line, co-author skill rules together, test them against that team's own real policies, and deploy the validated rules into the central skill library. The cycle then repeats for the next coverage line or team.">
+            <defs>
+              <marker id="a5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <!-- 5 stages -->
+            <g>
+              <rect x="10" y="30" width="164" height="100" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="92" y="58" text-anchor="middle" class="box-title" font-size="12.5">1 · Engage</text>
+              <text x="92" y="78" text-anchor="middle" class="box-sub" font-size="10.5">FDA team embeds with</text>
+              <text x="92" y="93" text-anchor="middle" class="box-sub" font-size="10.5">one customer's SME team</text>
+              <text x="92" y="112" text-anchor="middle" class="box-sub" font-size="10.5">for one coverage line</text>
+            </g>
+            <g>
+              <rect x="204" y="30" width="164" height="100" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="286" y="58" text-anchor="middle" class="box-title" font-size="12.5">2 · Learn</text>
+              <text x="286" y="78" text-anchor="middle" class="box-sub" font-size="10.5">real policy language,</text>
+              <text x="286" y="93" text-anchor="middle" class="box-sub" font-size="10.5">edge cases, and loss</text>
+              <text x="286" y="112" text-anchor="middle" class="box-sub" font-size="10.5">patterns for that line</text>
+            </g>
+            <g>
+              <rect x="398" y="30" width="164" height="100" rx="10" fill="var(--ice-tint)" stroke="currentColor" stroke-width="1.5"/>
+              <text x="480" y="58" text-anchor="middle" class="box-title" font-size="12.5">3 · Co-author</text>
+              <text x="480" y="78" text-anchor="middle" class="box-sub" font-size="10.5">FDA + SME jointly write</text>
+              <text x="480" y="93" text-anchor="middle" class="box-sub" font-size="10.5">and refine the skill —</text>
+              <text x="480" y="112" text-anchor="middle" class="box-sub" font-size="10.5">a high-quality prompt</text>
+            </g>
+            <g>
+              <rect x="592" y="30" width="164" height="100" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="674" y="58" text-anchor="middle" class="box-title" font-size="12.5">4 · Test</text>
+              <text x="674" y="78" text-anchor="middle" class="box-sub" font-size="10.5">validated against that</text>
+              <text x="674" y="93" text-anchor="middle" class="box-sub" font-size="10.5">team's own real policies —</text>
+              <text x="674" y="112" text-anchor="middle" class="box-sub" font-size="10.5">same rigor as this build</text>
+            </g>
+            <g>
+              <rect x="766" y="30" width="164" height="100" rx="10" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
+              <text x="848" y="58" text-anchor="middle" class="box-title" font-size="12.5" fill="var(--future)">5 · Deploy</text>
+              <text x="848" y="78" text-anchor="middle" class="box-sub" font-size="10.5" fill="var(--future)">merged into the central,</text>
+              <text x="848" y="93" text-anchor="middle" class="box-sub" font-size="10.5" fill="var(--future)">versioned skill library —</text>
+              <text x="848" y="112" text-anchor="middle" class="box-sub" font-size="10.5" fill="var(--future)">live for every team</text>
+            </g>
+
+            <line x1="174" y1="80" x2="202" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+            <line x1="368" y1="80" x2="396" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+            <line x1="562" y1="80" x2="590" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+            <line x1="756" y1="80" x2="764" y2="80" stroke="currentColor" stroke-width="1.5" marker-end="url(#a5)"/>
+
+            <!-- return loop -->
+            <path d="M848,130 C848,210 92,210 92,132" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a5)"/>
+            <text x="470" y="228" text-anchor="middle" class="arrow-label" font-size="11">next coverage line, or the next customer team</text>
+
+            <!-- future branch -->
+            <path d="M848,130 C848,270 620,270 620,270" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2 4" opacity="0.65" marker-end="url(#a5)"/>
+            <rect x="440" y="252" width="230" height="52" rx="9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2 4" opacity="0.75"/>
+            <text x="555" y="273" text-anchor="middle" class="box-sub" font-size="10.5" opacity="0.8">Future: route simple rules to a</text>
+            <text x="555" y="288" text-anchor="middle" class="box-sub" font-size="10.5" opacity="0.8">smaller model; complex reasoning stays frontier</text>
+          </svg>
+        </div>
+        <figcaption><strong>The library compounds:</strong> every engagement leaves behind reusable rules, not a one-off report — the next team's Wage &amp; Hour or BIPA rule starts from what the last team already validated.</figcaption>
+      </figure>
+    </div>
+
+    <div class="callout">
+      <span class="verdict">Recommendation: not now</span>
+      <h3>Do we need to train our own model?</h3>
+      <p>No — not for the reasoning itself, and not yet for anything else. This domain runs on judgment calls that shift by policy, by carrier, by jurisdiction: when a missing declarations page should stop a rule cold versus when the wording already answers the question on its own. That kind of nuance is exactly what a large general-purpose model, given a well-written skill, is good at — and exactly what a fine-tuned model would bake in at training time, making it slow and expensive to correct.</p>
+      <p>The evidence for this is in the build itself, not a hypothesis: a real inconsistency was found this week in how one rule handled two different incomplete policy wordings. The fix — rewriting the rule's guidance and adding a general principle for every future rule to inherit — took minutes to write and was validated the same day against both real documents. A fine-tuning cycle to correct the same behavior would have taken a training run, a new eval pass, and a redeploy.</p>
+      <p>Where a smaller or custom model could genuinely help <em>later</em>, as a cost and latency optimization once volume and rule patterns are stable: a cheap triage classifier ahead of the full skill chain (a fast first pass at coverage classification before the expensive reasoning model runs), or fine-tuning the highest-volume, most literal rules once their pattern has been proven stable across many real policies. Both are optimizations to revisit after the rule library is mature — not requirements to get started.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected','true');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>

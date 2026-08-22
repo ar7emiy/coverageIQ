@@ -69,6 +69,13 @@ doesn't use the word "Additional."
    attached policy, not only the base insuring agreement.
 2. If found, identify the stated limit of liability for that coverage.
 3. Compare the identified limit against the $1,000,000 target.
+4. If not found in Step 1, before concluding OPTIMIZATION *or* reaching for
+   MANUAL_REVIEW, check whether the wording's own extensions/coverage-
+   extensions section and limit-structure language (e.g. a General
+   Provisions clause stating the limit) give a complete-enough picture to
+   rule out a hidden Side A layer on their own — a missing declarations
+   page doesn't automatically mean this can't be determined; see the
+   MANUAL_REVIEW logic below for exactly where the line falls.
 
 ---
 
@@ -99,13 +106,35 @@ there's a specific passage to cite (e.g. the identified below-target limit).
 > where available."
 
 ### 🟡 MANUAL_REVIEW
-Triggered when: the document is incomplete or the applicable language
-cannot be reliably determined. Do not assume the coverage is absent merely
-because the document is incomplete — use MANUAL_REVIEW instead of
-OPTIMIZATION in that case.
+Triggered when CoverageIQ genuinely cannot determine whether Additional
+Side A coverage exists — as opposed to having reliably reviewed the
+document and found none. These are different outcomes, not the same thing
+phrased two ways:
 
-Output: Reasoning explaining what's missing or unclear. Include Evidence
-only if there's a specific passage worth citing.
+- **Reliably reviewed and found none → OPTIMIZATION, not MANUAL_REVIEW.**
+  If the document's own extensions, insuring agreements, and limit-
+  structure language (e.g. an explicit "one combined aggregate limit
+  applies to all coverage parts" statement, or a fully enumerated
+  Extensions/Coverage Extensions section with no Side A-related grant among
+  them) are complete enough to rule out a distinct Side A DIC/excess/non-
+  indemnifiable-loss layer, that's a reliable "not identified" finding —
+  even when the document lacks a declarations page. A missing declarations
+  page only excuses the specific fact it would supply (the *dollar amount*
+  of a confirmed grant) — it doesn't cast doubt on a conclusion the
+  wording's own text already answers. See "Missing declarations/schedule ≠
+  blanket uncertainty" in `skills/AGENT_SYSTEM_INSTRUCTIONS.md`.
+- **Genuinely can't tell → MANUAL_REVIEW.** Use this when the wording
+  itself points to something missing that's actually needed to resolve
+  *this* determination — e.g. it references an attached excess/DIC policy
+  or a Schedule of Forms that isn't included, so whether that layer exists
+  can't be confirmed either way; or the extensions/limit-structure language
+  is itself incomplete, silent, or ambiguous about whether a separate Side
+  A layer could exist.
+
+Output: Reasoning explaining what's missing or unclear — and, for the first
+case above, explaining *why* the review counts as reliable despite the
+missing declarations page (what was checked, and why it was sufficient).
+Include Evidence only if there's a specific passage worth citing.
 
 ## Evidence & confidence requirements
 Every result must cite the relevant policy/quote language, the identified
@@ -119,3 +148,11 @@ too literally — see `skills/AGENT_SYSTEM_INSTRUCTIONS.md`'s "Read policies
 like an underwriter, not a keyword matcher." A policy that genuinely has
 $2M of Side A DIC coverage under a completely separate attached form is not
 missing this coverage just because it never uses the word "Additional."
+
+This rule was also the source of a real inconsistency caught during testing:
+against two different real specimen wordings, both missing a declarations
+page, this rule reached MANUAL_REVIEW on one and a confident OPTIMIZATION
+on the other — same rule, same kind of incompleteness, different outcome.
+The MANUAL_REVIEW logic above was rewritten to fix that (see "Missing
+declarations/schedule ≠ blanket uncertainty" in AGENT_SYSTEM_INSTRUCTIONS.md
+for the general principle this rule was the concrete trigger for).

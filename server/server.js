@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { PORT, OUTPUT_DIR } = require('./config');
+const { PORT, INPUT_DIR, OUTPUT_DIR } = require('./config');
 const { scanSubmissions } = require('./fileScanner');
 const { parseAnalysisMarkdown } = require('./parseAnalysis');
 
@@ -50,6 +50,23 @@ const server = http.createServer((req, res) => {
       if (err) return sendJson(res, 500, { error: 'Could not read analysis file' });
       const { coverage, flags } = parseAnalysisMarkdown(text);
       sendJson(res, 200, { prefix, filename: sub.filename, coverage, flags });
+    });
+    return;
+  }
+
+  // Raw PDF passthrough — lets the PDF pane show the real source document
+  // via the browser's native PDF viewer, independent of the evidence-
+  // highlight reconstruction (which needs analysis to exist first). Used
+  // in particular when a PDF has been uploaded but no analysis exists yet.
+  const pdfMatch = url.pathname.match(/^\/api\/submissions\/(\d+)\/pdf$/);
+  if (pdfMatch) {
+    const prefix = pdfMatch[1];
+    const sub = scanSubmissions().find(s => s.prefix === prefix);
+    if (!sub || !sub.input) { res.writeHead(404); res.end(); return; }
+    fs.readFile(path.join(INPUT_DIR, sub.inputFile), (err, data) => {
+      if (err) { res.writeHead(500); res.end(); return; }
+      res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Length': data.length });
+      res.end(data);
     });
     return;
   }

@@ -6,28 +6,85 @@
 <title>CoverageIQ</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script type="module">
+  import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.min.mjs';
+  window.pdfjsLib = pdfjsLib;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.worker.min.mjs';
+  window.dispatchEvent(new Event('pdfjs-ready'));
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#16324F; --ink-2:#1E4468; --charcoal:#14171C;
-    --paper:#F4F5F7; --panel:#FFFFFF; --line:#E2E5EA;
-    --slate:#5B6472; --slate-2:#8A93A3;
-    --green:#3F8F6B; --green-bg:#EAF4EF;
-    --rust:#C1503A; --rust-bg:#FAEBE7;
-    --amber:#A9791E; --amber-bg:#FBF2DF;
-    --gold:#D4AF37;
-    --font-display:'Space Grotesk',sans-serif;
-    --font-body:'Inter',sans-serif;
-    --font-mono:'IBM Plex Mono',monospace;
-  }
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html,body{ height:100%; }
-  body{ font-family:var(--font-body); background:var(--paper); color:var(--ink); overflow:hidden; }
+  :root {
+    --navy: #062b43;
+    --navy-dark: #031c2c;
+    --navy-light: #0d4063;
+    --ice: #a4c8e1;
+    --ice-tint: #eaf3f8;
+    --ice-soft: #f4f8fb;
+    --white: #ffffff;
 
-  /* ---------- splash screen ---------- */
-  /* Text sits pinned near the bottom edge, clear of the cube's footprint in
-     the vertical center, rather than centered on top of it. */
+    --bg-app: #f5f7fa;
+    --bg-card: #ffffff;
+    --bg-subtle: #f8fafc;
+    --border: rgba(6, 43, 67, 0.08);
+    --border-hover: rgba(6, 43, 67, 0.16);
+    --border-active: #a4c8e1;
+
+    --text-1: #062b43;
+    --text-2: #3a566a;
+    --text-3: #6b8699;
+    --text-4: #9db2c0;
+
+    --opt-color: #c94a29;
+    --opt-bg: #fdf3f0;
+    --opt-border: rgba(201, 74, 41, 0.2);
+
+    --rev-color: #b87b14;
+    --rev-bg: #fdf8ee;
+    --rev-border: rgba(184, 123, 20, 0.2);
+
+    --pass-color: #1a7f5a;
+    --pass-bg: #eef8f3;
+    --pass-border: rgba(26, 127, 90, 0.2);
+
+    --shadow-sm: 0 1px 3px rgba(6, 43, 67, 0.04), 0 1px 2px rgba(6, 43, 67, 0.02);
+    --shadow-md: 0 4px 16px rgba(6, 43, 67, 0.06), 0 1px 3px rgba(6, 43, 67, 0.03);
+    --shadow-lg: 0 12px 36px rgba(6, 43, 67, 0.09), 0 2px 6px rgba(6, 43, 67, 0.03);
+    --shadow-active: 0 0 0 2px var(--navy), 0 8px 24px rgba(6, 43, 67, 0.12);
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+
+    --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    --font-mono: 'JetBrains Mono', SFMono-Regular, monospace;
+    --font-display: 'Space Grotesk', sans-serif;
+    --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+    --gold: #D4AF37;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    font-family: var(--font-main);
+    background: var(--bg-app);
+    color: var(--text-1);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    /* overflow-wrap/word-break inherit to every dynamically-injected card and
+       evidence quote below — without this, a long unbroken run of text (a
+       policy quote, a long module name) ignores its container's shrinking
+       width when the PDF pane opens and visually spills past the card's
+       rounded border instead of wrapping. */
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* ---------- splash screen (restored exactly as in the classic UI) ---------- */
   #splashScreen{
     position:fixed; inset:0; z-index:100; background:#ffffff;
     display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
@@ -35,196 +92,28 @@
     transition:opacity 0.5s ease;
   }
   #splashScreen.hidden{ opacity:0; pointer-events:none; }
-  /* Full-viewport cube layer behind the wordmark/button — position:absolute here
-     fills #splashScreen (its nearest positioned ancestor) completely rather than
-     being sized by flex content, so it's never a small "contained" box. */
   #splashCubeStage{ position:absolute; inset:0; z-index:0; }
   #splashCubeStage canvas{ width:100%; height:100%; display:block; }
   #splashWordmark{
     position:relative; z-index:1;
-    font-family:'Poppins', sans-serif; font-weight:700; font-size:34px;
+    font-family:'Poppins', var(--font-display), sans-serif; font-weight:700; font-size:34px;
     color:#3a3f46; letter-spacing:-0.01em; opacity:1;
   }
   #splashWordmark span{ color:var(--gold); }
   #enterBtn{
     position:relative; z-index:1;
-    font-family:var(--font-body); font-size:13.5px; font-weight:600; color:#fff;
-    background:var(--ink); border:none; padding:11px 26px; border-radius:24px; cursor:pointer;
+    font-family:var(--font-main); font-size:13.5px; font-weight:600; color:#fff;
+    background:var(--navy); border:none; padding:11px 26px; border-radius:24px; cursor:pointer;
     transition:background 0.15s ease;
   }
-  #enterBtn:hover{ background:var(--ink-2); }
+  #enterBtn:hover{ background:var(--navy-light); }
   #enterBtn.fading{ opacity:0; pointer-events:none; transition:opacity 0.25s ease; }
   #splashWordmark.fading{ opacity:0; transition:opacity 0.25s ease; }
 
-  /* ---------- app ---------- */
-  .app{ height:100vh; display:flex; flex-direction:column; opacity:0; transition:opacity 0.4s ease; }
-  .app.ready{ opacity:1; }
+  .app-shell { height: 100vh; display: flex; overflow: hidden; opacity: 0; transition: opacity 0.4s ease; }
+  .app-shell.ready { opacity: 1; }
 
-  /* top bar */
-  .topbar{
-    background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:space-between;
-    padding:10px 16px; flex-shrink:0; gap:10px; position:relative; z-index:20;
-  }
-  .brand{ display:flex; align-items:center; gap:9px; }
-  .brand-mark{ width:28px; height:28px; border-radius:7px; background:rgba(255,255,255,0.14);
-    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .brand-mark svg{ width:20px; height:20px; }
-  .brand h1{ font-family:var(--font-display); font-size:15px; font-weight:600; letter-spacing:-0.01em; }
-
-  .file-dropdown{ position:relative; }
-  .file-btn{
-    font-family:var(--font-body); font-size:12px; font-weight:500; color:#fff;
-    background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.18);
-    padding:7px 11px; border-radius:8px; cursor:pointer;
-    display:flex; align-items:center; gap:8px; max-width:220px;
-  }
-  .file-btn .fname{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .file-btn svg{ width:12px; height:12px; flex-shrink:0; transition:transform 0.15s ease; }
-  .file-btn.open svg{ transform:rotate(180deg); }
-  .file-btn:disabled{ opacity:0.5; cursor:default; }
-
-  .file-menu{
-    display:none; position:absolute; top:calc(100% + 6px); right:0; width:270px;
-    background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden;
-    box-shadow:0 10px 30px rgba(0,0,0,0.18); z-index:30;
-  }
-  .file-menu.show{ display:block; }
-  .file-menu-label{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
-    color:var(--slate-2); padding:9px 12px 5px; }
-  .file-item{
-    padding:9px 12px; cursor:pointer; color:var(--ink); border-top:1px solid var(--line);
-  }
-  .file-item:hover{ background:var(--paper); }
-  .file-item.active{ background:#EEF3F8; }
-  .file-item-row{ display:flex; align-items:center; gap:9px; }
-  .file-item-prefix{ font-family:var(--font-mono); font-size:10px; background:var(--paper); color:var(--slate-2);
-    padding:2px 6px; border-radius:8px; flex-shrink:0; }
-  .file-item.active .file-item-prefix{ background:var(--ink); color:#fff; }
-  .file-item-name{ font-size:12.5px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-  .file-item-tag{
-    display:inline-flex; align-items:center; gap:5px; margin-top:5px;
-    font-family:var(--font-mono); font-size:10px; padding:2px 7px; border-radius:20px;
-  }
-  .file-item-tag svg{ width:11px; height:11px; flex-shrink:0; }
-  .file-item-tag.pending{ background:var(--amber-bg); color:var(--amber); }
-  .file-item-tag.missing-source{ background:var(--rust-bg); color:var(--rust); }
-
-  /* workspace */
-  .workspace{ flex:1; display:flex; overflow:hidden; position:relative; }
-
-  .flags-pane{
-    flex:1 1 auto; overflow-y:auto; padding:18px clamp(16px,3vw,28px);
-    transition:flex-basis 0.35s ease; min-width:0; position:relative;
-  }
-  .flags-inner{ max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
-
-  .state-msg{
-    display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
-    padding:70px 20px; color:var(--slate);
-  }
-  .state-msg .icon-ring{ width:40px; height:40px; border-radius:50%; background:var(--panel); border:1px solid var(--line);
-    display:flex; align-items:center; justify-content:center; margin-bottom:2px; }
-  .state-msg h2{ font-family:var(--font-display); font-size:15px; color:var(--ink); font-weight:600; }
-  .state-msg p{ font-size:12.5px; max-width:300px; line-height:1.5; }
-
-  /* flag block */
-  .flag-block{ background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-  .flag-block.status-optimization{ border-left:3px solid var(--rust); }
-  .flag-block.status-manual-review{ border-left:3px solid var(--amber); }
-  .flag-block.status-pass{ border-left:3px solid var(--green); }
-
-  .flag-head{ padding:13px 15px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
-  .flag-eyebrow{ font-family:var(--font-mono); font-size:10px; color:var(--slate-2); margin-bottom:3px; }
-  .flag-name{ font-family:var(--font-display); font-size:14px; font-weight:600; }
-  .badge{ font-family:var(--font-mono); font-size:10px; font-weight:500; padding:3px 8px; border-radius:20px;
-    white-space:nowrap; display:flex; align-items:center; gap:5px; flex-shrink:0; margin-top:2px; }
-  .badge::before{ content:''; width:6px; height:6px; border-radius:50%; }
-  .badge.optimization{ background:var(--rust-bg); color:var(--rust); }
-  .badge.optimization::before{ background:var(--rust); }
-  .badge.manual-review{ background:var(--amber-bg); color:var(--amber); }
-  .badge.manual-review::before{ background:var(--amber); }
-  .badge.pass{ background:var(--green-bg); color:var(--green); }
-  .badge.pass::before{ background:var(--green); }
-
-  .evidence-panel{ padding:0 15px 15px; display:flex; flex-direction:column; gap:10px; }
-  .ev-row .ev-label{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
-    color:var(--slate-2); margin-bottom:4px; }
-  .ev-mono{ font-family:var(--font-mono); font-size:11.5px; line-height:1.6; color:#3A4250;
-    background:var(--paper); padding:9px 11px; border-radius:6px; }
-  .ev-mono.suggested{ background:var(--green-bg); color:#1F4A38; }
-  .ev-text{ font-size:12.5px; line-height:1.55; color:var(--slate); }
-
-  /* coverage snapshot — always all four modules, since a single upload may
-     be a combined Management Liability document covering anywhere from
-     one to four of them; each row shows its actual status explicitly
-     (Present / Not Present / Manual Review) rather than hiding the ones
-     that aren't present. */
-  .coverage-snapshot-label{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
-    color:var(--slate-2); margin-bottom:8px; }
-  .coverage-panel{ display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--line);
-    border-radius:10px; padding:12px 14px; }
-  .coverage-panel + .coverage-panel{ margin-top:8px; }
-  .coverage-panel-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-  .coverage-panel.status-present .coverage-panel-dot{ background:var(--green); }
-  .coverage-panel.status-not-present .coverage-panel-dot{ background:var(--slate-2); }
-  .coverage-panel.status-manual-review .coverage-panel-dot{ background:var(--amber); }
-  .coverage-panel-name{ font-family:var(--font-display); font-size:13.5px; font-weight:600; }
-  .coverage-panel-detail{ font-family:var(--font-mono); font-size:11px; color:var(--slate); margin-top:2px; }
-  .coverage-panel-status{ font-family:var(--font-mono); font-size:10px; font-weight:500; margin-left:auto; flex-shrink:0; padding-left:10px; }
-  .coverage-panel.status-present .coverage-panel-status{ color:var(--green); }
-  .coverage-panel.status-not-present .coverage-panel-status{ color:var(--slate-2); }
-  .coverage-panel.status-manual-review .coverage-panel-status{ color:var(--amber); }
-
-  /* pdf pane */
-  .pdf-pane{
-    flex:0 0 0px; width:0; overflow:hidden; background:#EDEFF2; border-left:1px solid var(--line);
-    display:flex; flex-direction:column; transition:flex-basis 0.35s ease, width 0.35s ease;
-  }
-  .workspace.pdf-open .flags-pane{ flex-basis:44%; }
-  .workspace.pdf-open .pdf-pane{ flex-basis:56%; width:56%; }
-
-  .pdf-pane-header{
-    padding:12px 14px; background:var(--panel); border-bottom:1px solid var(--line);
-    display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
-  }
-  .pdf-pane-title{ font-size:12.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .pdf-pane-close{ background:none; border:none; cursor:pointer; color:var(--slate); padding:4px; flex-shrink:0; }
-  .pdf-pane-close svg{ width:15px; height:15px; }
-
-  .pdf-placeholder-wrap{ flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; align-items:center; gap:14px; }
-  .pdf-page{
-    width:100%; max-width:480px; aspect-ratio:8.5/11; background:#fff; border-radius:4px;
-    box-shadow:0 1px 4px rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:center; flex-shrink:0;
-  }
-  .pdf-page-inner{ text-align:center; color:var(--slate-2); }
-  .pdf-page-inner svg{ width:26px; height:26px; margin-bottom:8px; }
-  .pdf-page-inner p{ font-size:11px; font-family:var(--font-mono); }
-
-  /* right-edge tab */
-  .pdf-tab{
-    position:fixed; top:50%; right:0; transform:translateY(-50%);
-    background:var(--ink); color:#fff; border:none; cursor:pointer; z-index:25;
-    font-family:var(--font-body); font-size:12px; font-weight:600;
-    padding:12px 8px; border-radius:8px 0 0 8px; writing-mode:vertical-rl; text-orientation:mixed;
-    display:flex; align-items:center; gap:6px; box-shadow:-3px 0 12px rgba(0,0,0,0.12);
-  }
-  .pdf-tab svg{ width:13px; height:13px; transform:rotate(90deg); }
-
-  @media (max-width:760px){
-    .workspace.pdf-open .flags-pane{ display:none; }
-    .workspace.pdf-open .pdf-pane{ position:fixed; inset:0; top:49px; flex-basis:100%; width:100%; z-index:22; }
-    .pdf-tab{ display:none; }
-  }
-
-  /* loader overlay — position:fixed on .app's direct child (not nested inside
-     .flags-pane) so it always covers the full viewport, never just the flags
-     column; .cube-stage fills it completely via position:absolute;inset:0
-     rather than a capped min(62vh,560px) box, so the cube is never cropped
-     and stays framed correctly through any resize. Same technique as the
-     splash screen above, so both cube stages are always the same size. */
-  /* Caption pinned near the bottom edge, clear of the cube's footprint in
-     the vertical center, rather than centered on top of it. */
+  /* ---------- inter-page loader (restored exactly as in the classic UI) ---------- */
   .loader-overlay{
     position:fixed; inset:0; z-index:50;
     background:rgba(255,255,255,0.82);
@@ -236,11 +125,353 @@
   .loader-overlay.show{ opacity:1; pointer-events:all; }
   .cube-stage{ position:absolute; inset:0; z-index:0; }
   .cube-stage canvas{ width:100%; height:100%; display:block; }
-  .loader-caption{ position:relative; z-index:1; font-family:var(--font-mono); font-size:13px; color:var(--slate); text-align:center; }
-  .loader-caption .fname{ color:var(--ink); font-weight:500; }
-  .loader-dot{ display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--amber);
+  .loader-caption{ position:relative; z-index:1; font-family:var(--font-mono); font-size:13px; color:var(--text-2); text-align:center; }
+  .loader-caption .fname{ color:var(--navy); font-weight:600; }
+  .loader-dot{ display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--rev-color);
     margin-left:6px; animation:blink 1s ease-in-out infinite; }
   @keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+
+  /* ========== CENTER: COVERAGEIQ WORKSPACE ========== */
+  .workspace-main {
+    flex: 1; min-width: 0; display: flex; flex-direction: column;
+    height: 100vh; overflow: hidden; background: var(--bg-app);
+  }
+
+  .top-navbar {
+    height: 60px; background: var(--navy); color: #ffffff; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; z-index: 10; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-left { display: flex; align-items: center; gap: 16px; }
+
+  /* Brand mark restored exactly as in the classic UI — same icon, same wordmark. */
+  .brand{ display:flex; align-items:center; gap:9px; }
+  .brand-mark{ width:28px; height:28px; border-radius:7px; background:rgba(255,255,255,0.14);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .brand-mark svg{ width:20px; height:20px; }
+  .brand h1{ font-family:var(--font-display); font-size:15px; font-weight:600; letter-spacing:-0.01em; color:#ffffff; }
+
+  .doc-dropdown { position: relative; }
+  .doc-capsule {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 4px 12px; border-radius: var(--radius-xl); font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.9); cursor: pointer; max-width: 320px;
+    transition: background 0.2s ease;
+  }
+  .doc-capsule:hover { background: rgba(255, 255, 255, 0.14); }
+  .doc-capsule:disabled { cursor: default; opacity: 0.6; }
+  .doc-capsule .fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .doc-capsule svg { width: 11px; height: 11px; flex-shrink: 0; transition: transform 0.15s ease; }
+  .doc-capsule.open svg { transform: rotate(180deg); }
+
+  .doc-prefix-badge {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--navy);
+    background: var(--ice); padding: 1px 6px; border-radius: 4px; flex-shrink: 0;
+  }
+
+  .doc-menu {
+    display: none; position: absolute; top: calc(100% + 8px); left: 0; width: 300px;
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md);
+    overflow: hidden; box-shadow: var(--shadow-lg); z-index: 40;
+  }
+  .doc-menu.show { display: block; }
+  .doc-menu-label {
+    font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-3); padding: 10px 14px 6px;
+  }
+  .doc-item { padding: 10px 14px; cursor: pointer; color: var(--text-1); border-top: 1px solid var(--border); }
+  .doc-item:hover { background: var(--bg-app); }
+  .doc-item.active { background: var(--ice-soft); }
+  .doc-item-row { display: flex; align-items: center; gap: 9px; }
+  .doc-item-name { font-size: 12.5px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .doc-item-tag {
+    display: inline-flex; align-items: center; gap: 5px; margin-top: 5px;
+    font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: var(--radius-xl);
+  }
+  .doc-item-tag.pending { background: var(--rev-bg); color: var(--rev-color); }
+  .doc-item-tag.missing-source { background: var(--opt-bg); color: var(--opt-color); }
+  .doc-empty-note { padding: 14px; font-size: 12.5px; color: var(--text-3); }
+
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+
+  .btn-apple {
+    background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff; padding: 6px 14px; border-radius: var(--radius-sm); font-size: 12.5px;
+    font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: all 0.2s var(--ease-apple); font-family: var(--font-main);
+  }
+  .btn-apple:hover { background: var(--ice); color: var(--navy); border-color: var(--ice); }
+  .btn-apple.active { background: var(--white); color: var(--navy); border-color: var(--white); }
+
+  .workspace-scroll {
+    flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 24px;
+  }
+
+  .section-headline {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-3); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* ========== COVERAGE CLASSIFICATION — thin horizontal bars ========== */
+  /* Stacked full-width rows, not a grid — each bar shows only module code,
+     name, and status by default. Classification is secondary to the rule
+     suggestions below, so it shouldn't compete with them for vertical space;
+     everything past the essentials lives behind the "Details" dropdown. */
+  .squares-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; align-items: start; }
+
+  .coverage-bar {
+    background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md);
+    overflow: hidden; transition: border-color 0.2s ease, box-shadow 0.2s ease; box-shadow: var(--shadow-sm);
+  }
+  .coverage-bar.selected { border-color: var(--navy); box-shadow: var(--shadow-active); }
+
+  .coverage-bar-head {
+    display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .coverage-bar-head:hover { background: var(--bg-subtle); }
+
+  .module-code {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--navy);
+    background: var(--ice-tint); padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+  }
+  .coverage-bar-title {
+    font-size: 12.5px; font-weight: 700; color: var(--navy); flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .status-tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-xl); white-space: nowrap; flex-shrink: 0; }
+  .status-tag.present { background: var(--pass-bg); color: var(--pass-color); border: 1px solid var(--pass-border); }
+  .status-tag.review { background: var(--rev-bg); color: var(--rev-color); border: 1px solid var(--rev-border); }
+  .status-tag.not-present { background: #f1f5f9; color: var(--text-3); border: 1px solid #e2e8f0; }
+
+  .coverage-bar-details { border-top: 1px solid var(--border); }
+  .coverage-bar-details summary {
+    cursor: pointer; color: var(--text-3); font-weight: 600; font-size: 11px; list-style: none;
+    display: flex; align-items: center; gap: 4px; padding: 6px 14px; user-select: none;
+  }
+  .coverage-bar-details summary:hover { color: var(--navy); }
+  .coverage-bar-details summary::-webkit-details-marker { display: none; }
+  .coverage-bar-details summary::before { content: '▸'; font-size: 9px; transition: transform 0.15s ease; }
+  .coverage-bar-details[open] summary::before { transform: rotate(90deg); }
+  .coverage-bar-body { padding: 4px 14px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .coverage-bar-metrics { font-size: 13px; font-weight: 600; color: var(--navy); }
+
+  .card-evidence-snippet { background: var(--bg-subtle); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+  .ev-header-line { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-3); }
+  .ev-quote-text {
+    font-family: var(--font-mono); font-size: 11.5px; line-height: 1.45; color: var(--text-2);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+
+  .card-summary-pills { display: flex; gap: 6px; }
+  .summary-pill { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+  .summary-pill.opt { background: var(--opt-bg); color: var(--opt-color); border: 1px solid var(--opt-border); }
+  .summary-pill.rev { background: var(--rev-bg); color: var(--rev-color); border: 1px solid var(--rev-border); }
+  .summary-pill.pass { background: var(--pass-bg); color: var(--pass-color); border: 1px solid var(--pass-border); }
+
+  /* ========== RULES ACCORDION DECK ========== */
+  .rules-section-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+  .rules-filter-pills { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .filter-pill {
+    background: var(--white); border: 1px solid var(--border); padding: 5px 12px; border-radius: var(--radius-xl);
+    font-size: 12.5px; font-weight: 600; color: var(--text-2); cursor: pointer; transition: all 0.2s ease;
+    font-family: var(--font-main);
+  }
+  .filter-pill:hover { border-color: var(--navy); color: var(--navy); }
+  .filter-pill.active { background: var(--navy); color: #ffffff; border-color: var(--navy); }
+
+  .rules-search {
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-xl);
+    padding: 5px 14px; font-size: 12.5px; font-family: var(--font-main); color: var(--text-1);
+    width: 180px; outline: none; transition: width 0.2s var(--ease-apple), border-color 0.2s ease;
+  }
+  .rules-search:focus { border-color: var(--navy); width: 220px; }
+
+  .columns-deck { display: flex; gap: 14px; min-height: 420px; flex: 1; width: 100%; transition: all 0.35s var(--ease-apple); }
+
+  .deck-col {
+    flex: 1; background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+    display: flex; flex-direction: column; box-shadow: var(--shadow-sm); overflow: hidden;
+    transition: flex 0.35s var(--ease-apple), border-color 0.2s ease; min-width: 0;
+  }
+  .deck-col:hover { border-color: var(--border-hover); }
+
+  /* Fixed px, not a percentage — collapsed columns should stay this narrow
+     regardless of viewport width, leaving as much room as possible for
+     whichever column is actually expanded. */
+  .columns-deck.has-expanded .deck-col { flex: 0 0 32px; }
+  /* flex:1 1 0 (not a fixed 58%) so 1+ simultaneously-expanded columns —
+     which happens when a PDF passage is cited by rules in more than one
+     module — share the remaining space evenly instead of overflowing. */
+  .columns-deck.has-expanded .deck-col.expanded { flex: 1 1 0; min-width: 220px; border-color: var(--navy); box-shadow: var(--shadow-md); }
+
+  .col-top-bar {
+    padding: 14px 16px; background: var(--white); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;
+  }
+  .col-title-group { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+  .col-main-title { font-size: 14px; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .col-count-bubble {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-3);
+    background: var(--bg-app); padding: 2px 7px; border-radius: var(--radius-xl); flex-shrink: 0;
+  }
+
+  .col-strip-view { display: none; flex-direction: column; align-items: center; padding: 10px 2px; gap: 8px; height: 100%; cursor: pointer; }
+  .columns-deck.has-expanded .deck-col:not(.expanded) .col-strip-view { display: flex; }
+  .columns-deck.has-expanded .deck-col:not(.expanded) .col-scroll-feed { display: none; }
+  .col-strip-view .module-code { font-size: 9px; padding: 1px 3px; }
+
+  .strip-vertical-title {
+    writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg);
+    font-size: 11px; font-weight: 700; color: var(--navy); letter-spacing: 0.02em; margin-top: 6px;
+  }
+  .strip-pills { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .strip-pill { font-family: var(--font-mono); font-size: 9px; font-weight: 700; padding: 2px 3px; border-radius: 3px; min-width: 20px; text-align: center; }
+
+  .col-scroll-feed { padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex: 1; background: #fafbfc; }
+
+  .rule-item-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;
+    transition: all 0.2s var(--ease-apple); box-shadow: var(--shadow-sm);
+  }
+  .rule-item-card:hover { border-color: var(--border-hover); box-shadow: var(--shadow-md); }
+  .rule-item-card.rule-selected { border-color: var(--navy); box-shadow: 0 0 0 2px var(--navy); }
+  .rule-item-card.opt { border-left: 4px solid var(--opt-color); }
+  .rule-item-card.rev { border-left: 4px solid var(--rev-color); }
+  .rule-item-card.pass { border-left: 4px solid var(--pass-color); }
+
+  .rule-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .rule-id-label {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--navy);
+    background: var(--ice-tint); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px;
+  }
+  .rule-headline { font-size: 14.5px; font-weight: 700; color: var(--navy); line-height: 1.35; }
+  .rule-pill-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--radius-xl); white-space: nowrap; flex-shrink: 0; }
+  .rule-pill-badge.opt { background: var(--opt-bg); color: var(--opt-color); border: 1px solid var(--opt-border); }
+  .rule-pill-badge.rev { background: var(--rev-bg); color: var(--rev-color); border: 1px solid var(--rev-border); }
+  .rule-pill-badge.pass { background: var(--pass-bg); color: var(--pass-color); border: 1px solid var(--pass-border); }
+
+  .rule-finding-body { font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+  .rule-recommendation-box { background: var(--opt-bg); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; line-height: 1.5; color: var(--opt-color); }
+  .rec-label-eyebrow { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--opt-color); margin-bottom: 4px; }
+
+  .rule-evidence-box { background: var(--bg-subtle); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; }
+  .rule-evidence-box + .rule-evidence-box { margin-top: -2px; }
+  .ev-meta-line { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-3); gap: 8px; }
+  .btn-doc-link {
+    background: none; border: none; color: var(--navy); cursor: pointer; font-size: 11.5px;
+    font-family: var(--font-mono); font-weight: 700; text-decoration: underline; white-space: nowrap; flex-shrink: 0; padding: 0;
+  }
+  .btn-doc-link:hover { color: var(--navy-light); }
+  .ev-quote-string { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; color: var(--text-1); }
+
+  .rule-reasoning-body { font-size: 12.5px; line-height: 1.5; color: var(--text-3); }
+  .rule-confidence-line { font-size: 11px; color: var(--text-4); font-family: var(--font-mono); }
+
+  .empty-state-view {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    padding: 40px 16px; gap: 8px; color: var(--text-3); flex: 1;
+  }
+  .empty-state-view .es-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-top: 6px; }
+  .empty-state-view p { font-size: 12.5px; line-height: 1.5; max-width: 260px; }
+  .empty-state-view svg { width: 24px; height: 24px; }
+
+  .workspace-empty { display: flex; align-items: center; justify-content: center; flex: 1; }
+  .workspace-empty .empty-state-view { padding: 70px 20px; }
+  .workspace-empty .icon-ring {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 4px;
+  }
+
+  /* ========== RIGHT: PDF SIDEBAR (evidence-highlight placeholder) ========== */
+  .pdf-sidebar {
+    flex: 0 0 0px; width: 0; background: #f0f4f8; border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; transition: width 0.35s var(--ease-apple), flex-basis 0.35s var(--ease-apple);
+    overflow: hidden; z-index: 20; position: relative;
+  }
+  .pdf-sidebar.open { flex: 0 0 420px; width: 420px; }
+  .pdf-sidebar.resizing { transition: none; } /* 1:1 with the mouse while dragging, not chasing the open/close animation */
+
+  .pdf-resize-handle {
+    /* left:0 (not a negative offset) — .pdf-sidebar has overflow:hidden, which
+       clips *and blocks hit-testing on* anything positioned outside its own
+       box, so a handle hanging off the left edge would be unclickable. */
+    position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; z-index: 30;
+  }
+  .pdf-resize-handle:hover, .pdf-resize-handle.active { background: var(--border-active); }
+
+  .pdf-bar-header { height: 60px; padding: 0 20px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .pdf-header-title { font-size: 13px; font-weight: 700; color: var(--navy); font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .btn-pdf-close { background: none; border: none; cursor: pointer; color: var(--text-3); padding: 4px; border-radius: var(--radius-sm); flex-shrink: 0; }
+  .btn-pdf-close:hover { background: var(--bg-app); color: var(--navy); }
+
+  .pdf-zoom-controls { display: flex; align-items: center; gap: 2px; background: var(--bg-app); border-radius: var(--radius-xl); padding: 3px; flex-shrink: 0; }
+  .btn-pdf-zoom {
+    background: none; border: none; cursor: pointer; color: var(--text-2); width: 22px; height: 22px; border-radius: 50%;
+    font-size: 14px; font-weight: 700; line-height: 1; display: flex; align-items: center; justify-content: center;
+  }
+  .btn-pdf-zoom:hover { background: var(--white); color: var(--navy); box-shadow: var(--shadow-sm); }
+  .pdf-zoom-label { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3); width: 34px; text-align: center; flex-shrink: 0; }
+
+  .pdf-document-scroll { flex: 1; overflow: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+  .pdf-native-frame { width: 100%; height: 100%; border: none; border-radius: var(--radius-sm); background: #fff; }
+
+  /* Real rendered PDF page (PDF.js canvas) with absolutely-positioned
+     highlight overlays for fuzzy-matched evidence passages — one rect per
+     line the passage spans, positioned in the page's own pixel space.
+     .pdf-page-zoom-wrap reserves the zoomed layout size; .pdf-real-page
+     stays sized at the "100%" logical size and gets CSS-transformed up to
+     fill it — zoom is then just changing these two numbers, no re-render. */
+  .pdf-page-zoom-wrap { flex-shrink: 0; }
+  .pdf-real-page {
+    position: relative; box-shadow: var(--shadow-md); border-radius: 4px; overflow: hidden;
+    transform-origin: top left;
+  }
+  .pdf-real-page canvas { display: block; width: 100%; height: 100%; }
+  .pdf-real-highlight {
+    position: absolute; background: rgba(201, 74, 41, 0.28); border-bottom: 2px solid var(--opt-color);
+    cursor: pointer; border-radius: 2px; transition: opacity 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .pdf-real-highlight.dimmed { opacity: 0.25; background: rgba(107, 134, 153, 0.25); border-bottom-color: var(--text-4); }
+  .pdf-real-highlight.active-highlight { background: rgba(201, 74, 41, 0.4); box-shadow: 0 0 0 2px var(--navy); }
+
+  .pdf-sheet {
+    width: 100%; max-width: 370px; background: var(--white); border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md); padding: 20px 20px 16px; font-family: var(--font-mono);
+    font-size: 11px; line-height: 1.65; color: #1e293b; position: relative;
+  }
+  .pdf-section-title { font-weight: 700; font-size: 12px; color: var(--navy); border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 10px; }
+  .pdf-evidence-item { margin-bottom: 12px; border-radius: 6px; cursor: pointer; transition: opacity 0.2s ease, box-shadow 0.2s ease; }
+  .pdf-evidence-item:last-child { margin-bottom: 0; }
+  .pdf-evidence-source { font-size: 10px; color: var(--text-3); margin-bottom: 4px; font-weight: 600; }
+  .pdf-text-highlight {
+    background: var(--opt-bg); border-bottom: 2px solid var(--opt-color); padding: 4px 6px;
+    font-weight: 600; color: var(--opt-color); border-radius: 3px; display: block;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  /* Selecting a rule or a passage (selectRule/selectSection) dims every
+     unrelated passage instead of just flashing one — that's what makes
+     "select one, everything else dims" work as a persistent state. */
+  .pdf-evidence-item.dimmed { opacity: 0.32; }
+  .pdf-evidence-item.dimmed .pdf-text-highlight { background: var(--bg-subtle); border-bottom-color: var(--border); color: var(--text-3); }
+  .pdf-evidence-item.active-highlight { box-shadow: 0 0 0 2px var(--navy); }
+
+  .section-filter-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--ice-tint); border: 1px solid var(--border-active); border-radius: var(--radius-sm);
+    padding: 8px 12px; font-size: 12px; color: var(--navy); font-weight: 600;
+  }
+
+  @media (max-width: 1400px) { .pdf-sidebar.open { width: 360px; flex-basis: 360px; } }
+  @media (max-width: 1100px) {
+    .columns-deck { flex-direction: column; }
+    .columns-deck.has-expanded .deck-col { flex: 1 1 auto !important; }
+  }
 </style>
 </head>
 <body>
@@ -251,77 +482,74 @@
   <button id="enterBtn">Enter CoverageIQ</button>
 </div>
 
-<div class="app" id="app">
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-mark">
-        <svg viewBox="0 0 24 24">
-          <polygon points="12,2 20,6.5 12,11 4,6.5" fill="#a4c8e1" stroke="#d4af37" stroke-width="0.6"/>
-          <polygon points="4,6.5 12,11 12,20 4,15.5" fill="#00263e" stroke="#d4af37" stroke-width="0.6"/>
-          <polygon points="20,6.5 12,11 12,20 20,15.5" fill="#001a2b" stroke="#d4af37" stroke-width="0.6"/>
-        </svg>
-      </div>
-      <h1>CoverageIQ</h1>
-    </div>
-    <div class="file-dropdown">
-      <button class="file-btn" id="fileBtn">
-        <span class="fname" id="fileBtnLabel">Select a file…</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="file-menu" id="fileMenu">
-        <div class="file-menu-label">Input folder</div>
-        <div id="fileMenuList"></div>
-      </div>
-    </div>
-  </div>
+<div class="app-shell" id="appShell">
 
-  <div class="workspace" id="workspace">
-    <div class="flags-pane" id="flagsPane">
-      <div class="flags-inner" id="flagsInner"></div>
-    </div>
-    <div class="pdf-pane" id="pdfPane">
-      <div class="pdf-pane-header">
-        <span class="pdf-pane-title" id="pdfPaneTitle">—</span>
-        <button class="pdf-pane-close" id="pdfClose">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  <main class="workspace-main">
+    <header class="top-navbar">
+      <div class="nav-left">
+        <div class="brand">
+          <div class="brand-mark">
+            <svg viewBox="0 0 24 24">
+              <polygon points="12,2 20,6.5 12,11 4,6.5" fill="#a4c8e1" stroke="#d4af37" stroke-width="0.6"/>
+              <polygon points="4,6.5 12,11 12,20 4,15.5" fill="#00263e" stroke="#d4af37" stroke-width="0.6"/>
+              <polygon points="20,6.5 12,11 12,20 20,15.5" fill="#001a2b" stroke="#d4af37" stroke-width="0.6"/>
+            </svg>
+          </div>
+          <h1>CoverageIQ</h1>
+        </div>
+        <div class="doc-dropdown">
+          <button class="doc-capsule" id="docBtn">
+            <span class="doc-prefix-badge" id="docPrefixBadge" style="display:none;"></span>
+            <span class="fname" id="docBtnLabel">No files yet</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="doc-menu" id="docMenu">
+            <div class="doc-menu-label">Submissions</div>
+            <div id="docMenuList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <button class="btn-apple" id="resetDeckBtn">Reset Deck</button>
+        <button class="btn-apple active" id="togglePdfBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          Policy PDF
         </button>
       </div>
-      <div class="pdf-placeholder-wrap" id="pdfPlaceholderWrap">
-        <div class="pdf-page"><div class="pdf-page-inner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg>
-          <p>PDF preview — placeholder</p>
-        </div></div>
-        <div class="pdf-page"><div class="pdf-page-inner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg>
-          <p>page 2</p>
-        </div></div>
+    </header>
+
+    <div class="workspace-scroll" id="workspaceScroll"></div>
+  </main>
+
+  <aside class="pdf-sidebar open" id="pdfSidebar">
+    <div class="pdf-resize-handle" id="pdfResizeHandle" title="Drag to resize"></div>
+    <div class="pdf-bar-header">
+      <span class="pdf-header-title" id="pdfHeaderTitle">—</span>
+      <div class="pdf-zoom-controls" id="pdfZoomControls" style="display:none;">
+        <button class="btn-pdf-zoom" id="pdfZoomOutBtn" title="Zoom out">−</button>
+        <span class="pdf-zoom-label" id="pdfZoomLabel">100%</span>
+        <button class="btn-pdf-zoom" id="pdfZoomInBtn" title="Zoom in">+</button>
       </div>
-      <div class="state-msg" id="pdfUnavailableMsg" style="display:none; flex:1;">
-        <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg></div>
-        <h2>Source PDF unavailable</h2>
-        <p>The original PDF for this submission wasn't found in the input folder — only the analysis is available.</p>
-      </div>
+      <button class="btn-pdf-close" id="closePdfBtn" title="Close PDF viewer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
     </div>
-  </div>
+    <div class="pdf-document-scroll" id="pdfDocScroll"></div>
+  </aside>
 
   <div class="loader-overlay" id="loaderOverlay">
     <div class="cube-stage" id="cubeStage"><canvas id="cubeStageCanvas"></canvas></div>
     <div class="loader-caption">Loading <span class="fname" id="loaderFname">—</span><span class="loader-dot"></span></div>
   </div>
 
-  <button class="pdf-tab" id="pdfTab">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-    View PDF
-  </button>
 </div>
 
 <script>
 /* ============================================================
-   CUBE ENGINE — shared factory used by both the splash screen and
-   the inter-page loader, so they always render at identical size
-   (both fill their fixed full-viewport parent via position:absolute;
-   inset:0 — see .coverage snapshot/.loader-overlay CSS above) and
-   behave identically on resize.
+   CUBE ENGINE — restored exactly from the classic UI. Shared factory
+   used by both the splash screen and the inter-page loader, so they
+   always render at identical size and behave identically on resize.
    ============================================================ */
 function createCubeEngine(canvas){
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
@@ -433,25 +661,29 @@ function createCubeEngine(canvas){
       gsap.set(c.scale, { x:0.001, y:0.001, z:0.001 });
     });
 
+    // Compressed to land around the same ~2s total as playReverseCompressed
+    // (the file-switch loader) — this used to run ~5.3s on its own, which
+    // read as noticeably slower than switching files despite being a
+    // one-time, less-important wait.
     const tl = gsap.timeline({ onComplete: onDone });
     tl.to(logoGroup.scale, { x:1, y:1, z:1, duration:0.01 }, 0);
-    tl.fromTo(outlineCube.scale, { x:0.001, y:0.001, z:0.001 }, { x:1, y:1, z:1, duration:0.55, ease:'power2.out' }, 0);
+    tl.fromTo(outlineCube.scale, { x:0.001, y:0.001, z:0.001 }, { x:1, y:1, z:1, duration:0.25, ease:'power2.out' }, 0);
 
-    tl.addLabel('populate', 0.35);
+    tl.addLabel('populate', 0.15);
     const cubeOrder = cubes.slice().sort(() => Math.random() - 0.5);
     cubeOrder.forEach((cube, i) => {
-      tl.to(cube.scale, { x:1, y:1, z:1, duration:0.32, ease:'back.out(2.2)' }, `populate+=${i*0.012}`);
+      tl.to(cube.scale, { x:1, y:1, z:1, duration:0.18, ease:'back.out(2.2)' }, `populate+=${i*0.006}`);
     });
 
-    tl.addLabel('settle', 'populate+=0.5');
-    tl.to(outlineCube.scale, { x:0.001, y:0.001, z:0.001, duration:0.3, ease:'power2.in' }, 'settle');
-    tl.to(logoGroup.rotation, { y:'+='+(Math.PI*2), duration:1.0, ease:'power2.out' }, 'settle+=0.1');
+    tl.addLabel('settle', 'populate+=0.25');
+    tl.to(outlineCube.scale, { x:0.001, y:0.001, z:0.001, duration:0.18, ease:'power2.in' }, 'settle');
+    tl.to(logoGroup.rotation, { y:'+='+(Math.PI*2), duration:0.5, ease:'power2.out' }, 'settle+=0.05');
 
-    tl.addLabel('hold', 'settle+=1.4');
-    tl.addLabel('disassemble', 'hold+=1.6');
+    tl.addLabel('hold', 'settle+=0.55');
+    tl.addLabel('disassemble', 'hold+=0.25');
     cubes.forEach(cube => {
       const target = explodeTarget(cube);
-      tl.to(cube.position, { x:target.x, y:target.y, z:target.z, duration:1.5, ease:'power2.in' }, 'disassemble');
+      tl.to(cube.position, { x:target.x, y:target.y, z:target.z, duration:0.7, ease:'power2.in' }, 'disassemble');
     });
   }
 
@@ -538,43 +770,82 @@ document.getElementById('enterBtn').addEventListener('click', async () => {
 
   const initPromise = initDashboard();
 
-  await splashEngine.shrinkAway(0.4);
+  await splashEngine.shrinkAway(0.3);
   await new Promise(resolve => splashEngine.playForward(resolve));
   await initPromise;
 
   document.getElementById('splashScreen').classList.add('hidden');
-  document.getElementById('app').classList.add('ready');
+  document.getElementById('appShell').classList.add('ready');
 });
 
 /* ============================================================
-   DASHBOARD — real data via the actual /api/submissions and
-   /api/submissions/:prefix endpoints served by server/server.js.
+   DATA LAYER — unchanged from the classic UI: real /api/submissions
+   and /api/submissions/:prefix endpoints, same pairing/pending rules.
    ============================================================ */
 const POLL_INTERVAL_MS = 3000;
-const badgeLabel = { 'optimization':'Optimization', 'manual-review':'Manual Review', 'pass':'Pass' };
-const coverageStatusLabel = { 'present':'Present', 'not-present':'Not Present', 'manual-review':'Manual Review' };
+
+const MODULES = [
+  { code: 'DO', fallbackTitle: 'Private Company D&O' },
+  { code: 'EPLI', fallbackTitle: 'Employment Practices Liability' },
+  { code: 'FI', fallbackTitle: 'Fiduciary Liability' },
+  { code: 'CR', fallbackTitle: 'Commercial Crime' },
+];
+
+const statusTagClass = { present: 'present', 'not-present': 'not-present', 'manual-review': 'review' };
+const statusTagLabel = { present: 'Present', 'not-present': 'Not Present', 'manual-review': 'Manual Review' };
+const flagClass = { optimization: 'opt', 'manual-review': 'rev', pass: 'pass' };
+const flagLabel = { optimization: 'Optimization', 'manual-review': 'Manual Review', pass: 'Pass' };
 
 let submissions = [];
 let detailCache = {};
 let selectedPrefix = null;
-let isFirstRender = true;
-let loaderPlaying = false;
+let isSwitching = false;
+// null = "not decided yet, pick a default"; a Set (possibly empty) once decided.
+// A Set (not a single code) because a section-driven selection can span more
+// than one module's rules, and all of them need to expand together.
+let expandedModules = null;
+let activeFilter = 'all';
+let searchQuery = '';
+// Selection driven by clicking a rule card (selectRule) or a PDF highlight
+// (selectSection) — see the "EVIDENCE SECTIONS" block below for how these
+// two directions share one underlying model.
+let selectedRuleKey = null;
+let selectedSectionId = null;
+let sectionRuleFilter = null; // Set of rule source-keys, or null = no section-driven filter active
+// Incremented on every buildPdfPane call so an in-flight async PDF.js render
+// (loading the doc, rendering pages) can detect it's been superseded by a
+// newer one — e.g. the user switched submissions again before it finished —
+// and bail out instead of racing to paint stale content over the new view.
+let pdfRenderToken = 0;
+// Prefix of the submission the real PDF pages are currently rendered for, or
+// null. renderWorkspace() calls buildPdfPane() on *every* re-render — filter
+// pill clicks, column expand/collapse, every poll tick — not just when the
+// submission changes. Without this, all of those would re-fetch and re-render
+// the whole PDF (fuzzy-matching included) even though nothing about it changed.
+let pdfPaneRenderedPrefix = null;
+// Multiplies the auto-fit-to-pane-width scale computed in renderRealPdfPane.
+// 1 = fit exactly; user-adjustable via the zoom controls in the pdf header.
+let pdfZoomMultiplier = 1;
 
-const fileBtn = document.getElementById('fileBtn');
-const fileBtnLabel = document.getElementById('fileBtnLabel');
-const fileMenu = document.getElementById('fileMenu');
-const fileMenuList = document.getElementById('fileMenuList');
-const flagsInner = document.getElementById('flagsInner');
-const workspace = document.getElementById('workspace');
-const pdfTab = document.getElementById('pdfTab');
-const pdfPane = document.getElementById('pdfPane');
-const pdfPaneTitle = document.getElementById('pdfPaneTitle');
-const pdfPlaceholderWrap = document.getElementById('pdfPlaceholderWrap');
-const pdfUnavailableMsg = document.getElementById('pdfUnavailableMsg');
-const pdfClose = document.getElementById('pdfClose');
+const docBtn = document.getElementById('docBtn');
+const docPrefixBadge = document.getElementById('docPrefixBadge');
+const docBtnLabel = document.getElementById('docBtnLabel');
+const docMenu = document.getElementById('docMenu');
+const docMenuList = document.getElementById('docMenuList');
+const workspaceScroll = document.getElementById('workspaceScroll');
+const resetDeckBtn = document.getElementById('resetDeckBtn');
+const togglePdfBtn = document.getElementById('togglePdfBtn');
+const pdfSidebar = document.getElementById('pdfSidebar');
+const pdfHeaderTitle = document.getElementById('pdfHeaderTitle');
+const pdfDocScroll = document.getElementById('pdfDocScroll');
+const closePdfBtn = document.getElementById('closePdfBtn');
+const pdfZoomControls = document.getElementById('pdfZoomControls');
+const pdfZoomLabel = document.getElementById('pdfZoomLabel');
+const pdfZoomOutBtn = document.getElementById('pdfZoomOutBtn');
+const pdfZoomInBtn = document.getElementById('pdfZoomInBtn');
+const pdfResizeHandle = document.getElementById('pdfResizeHandle');
 const loaderOverlay = document.getElementById('loaderOverlay');
 const loaderFname = document.getElementById('loaderFname');
-
 const loaderEngine = createCubeEngine(document.getElementById('cubeStageCanvas'));
 
 async function fetchSubmissions(){
@@ -590,191 +861,926 @@ async function fetchDetail(prefix){
   return detailCache[prefix];
 }
 
-// Any submission with at least one file is viewable now — a PDF alone
-// shows an "analysis pending" state, an analysis alone shows flags with
-// the PDF pane marked unavailable. Only a wholly-unknown prefix is excluded.
+// Any submission with at least one file is viewable — a PDF alone shows an
+// "analysis pending" state, an analysis alone shows flags with the PDF pane
+// marked unavailable. Only a wholly-unknown prefix is excluded.
 function viewableSubmissions(){ return submissions.filter(s => s.input || s.output); }
 
-function renderMenu(){
-  fileMenuList.innerHTML = '';
-  fileBtn.disabled = submissions.length === 0;
+/* ============================================================
+   EVIDENCE — every Evidence quote already carries a mandatory
+   "(Page N)" or "(Page N, detail)" citation baked into the quote
+   text (see skills/AGENT_SYSTEM_INSTRUCTIONS.md). Pull that apart so
+   the PDF pane can group real evidence by page and rule cards can
+   link straight to it — no real PDF.js/OCR needed for this to work.
+   ============================================================ */
+function extractPageInfo(quote){
+  const m = quote.match(/\(Page\s+([^,)]+)(?:,\s*([^)]+))?\)\s*$/i);
+  if (!m) return { page: null, detail: null, text: quote };
+  return { page: m[1].trim(), detail: m[2] ? m[2].trim() : null, text: quote.slice(0, m.index).trim() };
+}
+function stripQuoteMarks(text){ return text.replace(/^"/, '').replace(/"$/, ''); }
+function normalizeQuoteText(text){ return text.trim().toLowerCase().replace(/\s+/g, ' '); }
+
+/* ============================================================
+   EVIDENCE SECTIONS — two different rules can cite the exact same
+   underlying passage (e.g. the same declarations line). Rather than
+   rendering that passage twice in the PDF pane, dedupe evidence quotes
+   by normalized (page + text) into one "section" per real passage, each
+   tracking every rule that cites it. This one model drives both
+   directions of the linked selection: selecting a rule highlights all
+   its sections; selecting a section filters the deck to its rule(s).
+   ============================================================ */
+function collectSections(detail){
+  const raw = [];
+  (detail.coverage || []).forEach((c, i) => {
+    (c.evidence || []).forEach((e, idx) => {
+      const info = extractPageInfo(e.quote);
+      raw.push({
+        sourceKey: `cov${i}-${idx}`, page: info.page || 'unknown', detailNote: info.detail,
+        text: stripQuoteMarks(info.text), ruleKey: null,
+        ruleLabel: `Coverage — ${c.module}${e.label ? ' (' + e.label + ')' : ''}`,
+      });
+    });
+  });
+  (detail.flags || []).forEach((f, j) => {
+    (f.evidence || []).forEach((e, idx) => {
+      const info = extractPageInfo(e.quote);
+      raw.push({
+        sourceKey: `flag${j}-${idx}`, page: info.page || 'unknown', detailNote: info.detail,
+        text: stripQuoteMarks(info.text), ruleKey: `flag${j}`,
+        ruleLabel: `${f.id ? f.id + ' — ' : ''}${f.name}${e.label ? ' (' + e.label + ')' : ''}`,
+      });
+    });
+  });
+
+  const sections = [];
+  const groupIndexByDedupKey = new Map();
+  const sectionIdBySourceKey = {};
+
+  raw.forEach(r => {
+    const dedupKey = r.page + '||' + normalizeQuoteText(r.text);
+    let gi = groupIndexByDedupKey.get(dedupKey);
+    if (gi === undefined){
+      gi = sections.length;
+      sections.push({ id: `sec-${gi}`, page: r.page, detail: r.detailNote, text: r.text, rules: [] });
+      groupIndexByDedupKey.set(dedupKey, gi);
+    }
+    const section = sections[gi];
+    if (!section.rules.some(x => x.key === r.ruleKey)) section.rules.push({ key: r.ruleKey, label: r.ruleLabel });
+    sectionIdBySourceKey[r.sourceKey] = section.id;
+  });
+
+  return { sections, sectionIdBySourceKey };
+}
+
+function jumpEvidenceButton(sectionId, page){
+  if (!sectionId || !page) return '<span class="btn-doc-link" style="color:var(--text-4); text-decoration:none; cursor:default;">Page unknown</span>';
+  return `<button class="btn-doc-link" onclick="event.stopPropagation(); selectSection('${sectionId}')">Jump to Page ${page} →</button>`;
+}
+
+function buildPdfPane(current, detail){
+  pdfZoomControls.style.display = 'none'; // re-shown only once real PDF pages actually render below
+
+  if (!current){
+    pdfHeaderTitle.textContent = '—';
+    pdfDocScroll.innerHTML = `<div class="empty-state-view">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      <div class="es-title">No submission selected</div>
+      <p>Select a submission to preview its evidence.</p>
+    </div>`;
+    return;
+  }
+
+  pdfHeaderTitle.textContent = current.filename;
+
+  if (!current.input){
+    pdfDocScroll.innerHTML = `<div class="empty-state-view">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg>
+      <div class="es-title">Source PDF unavailable</div>
+      <p>The original PDF for this submission wasn't found in the input folder — only the analysis is available.</p>
+    </div>`;
+    return;
+  }
+
+  // No analysis yet, so there's nothing to build evidence sections from —
+  // but the real PDF exists. Show it directly via the browser's native PDF
+  // viewer rather than an empty placeholder, so the user can still read the
+  // source document while waiting on the review.
+  if (!current.output){
+    pdfDocScroll.innerHTML = `<iframe class="pdf-native-frame" src="/api/submissions/${current.prefix}/pdf" title="${current.filename}"></iframe>`;
+    return;
+  }
+
+  const { sections } = collectSections(detail);
+  if (!sections.length){
+    pdfDocScroll.innerHTML = `<div class="empty-state-view">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+      <div class="es-title">No evidence yet</div>
+      <p>Evidence quotes will appear here, grouped by page, once analysis is available.</p>
+    </div>`;
+    return;
+  }
+
+  // Already rendered for this exact submission — nothing about the PDF or
+  // its evidence could have changed (detail is cached per-prefix), so just
+  // reapply dimming for whatever's newly selected instead of redoing the
+  // whole fetch/render/fuzzy-match cycle.
+  if (pdfPaneRenderedPrefix === current.prefix && pdfDocScroll.querySelector('.pdf-real-page')){
+    pdfZoomControls.style.display = 'flex';
+    renderPdfHighlightState();
+    return;
+  }
+
+  // Real rendering (PDF.js canvas + fuzzy-matched highlight overlays) is the
+  // primary path — the text-reconstruction below only runs as a fallback if
+  // that fails (corrupt file, pdf.js couldn't load, etc.).
+  const renderToken = ++pdfRenderToken;
+  pdfDocScroll.innerHTML = `<div class="empty-state-view">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+    <div class="es-title">Loading PDF…</div>
+  </div>`;
+  renderRealPdfPane(current, sections, renderToken).catch(err => {
+    if (renderToken !== pdfRenderToken) return; // a newer render superseded this one
+    console.error('Real PDF rendering failed, falling back to text reconstruction:', err);
+    buildPlaceholderEvidencePane(sections);
+  });
+}
+
+// Applies dimming based on current selection state — called after every PDF
+// pane rebuild, and directly by selectSection/selectRule/clearSectionFilter
+// so re-highlighting doesn't require re-rendering the whole pane. Works for
+// both the real PDF.js highlight overlays (which can be several rects per
+// section, one per line) and the text-reconstruction fallback, since both
+// tag every element with data-section-id.
+function renderPdfHighlightState(){
+  const activeIds = currentActiveSectionIds();
+  document.querySelectorAll('[data-section-id]').forEach(el => {
+    const id = el.dataset.sectionId;
+    if (!activeIds){
+      el.classList.remove('dimmed', 'active-highlight');
+    } else if (activeIds.has(id)){
+      el.classList.add('active-highlight');
+      el.classList.remove('dimmed');
+    } else {
+      el.classList.add('dimmed');
+      el.classList.remove('active-highlight');
+    }
+  });
+}
+
+// ---------- text-reconstruction fallback (original placeholder approach) ----------
+function buildPlaceholderEvidencePane(sections){
+  const groups = {};
+  sections.forEach(s => { (groups[s.page] = groups[s.page] || []).push(s); });
+  const pageKeys = Object.keys(groups).filter(k => k !== 'unknown').sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+  if (groups.unknown) pageKeys.push('unknown');
+
+  pdfDocScroll.innerHTML = pageKeys.map(pk => {
+    const heading = pk === 'unknown' ? 'Location not specified' : `Page ${pk}`;
+    const body = groups[pk].map(s => `
+      <div class="pdf-evidence-item" id="${s.id}" data-section-id="${s.id}" onclick="selectSection('${s.id}')">
+        <div class="pdf-evidence-source">${s.rules.map(r => r.label).join(' · ')}${s.detail ? ' · ' + s.detail : ''}</div>
+        <span class="pdf-text-highlight">"${s.text}"</span>
+      </div>`).join('');
+    return `<div class="pdf-sheet"><div class="pdf-section-title">${heading}</div>${body}</div>`;
+  }).join('');
+
+  renderPdfHighlightState();
+}
+
+// ---------- real PDF.js rendering + fuzzy text-match highlighting ----------
+function waitForPdfjs(){
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  return new Promise(resolve => window.addEventListener('pdfjs-ready', () => resolve(window.pdfjsLib), { once: true }));
+}
+
+function normalizeForMatch(s){
+  return s.toLowerCase()
+    .replace(/[“”]/g, '"').replace(/[‘’]/g, "'")
+    .replace(/[‐‑‒–—]/g, '-')
+    .replace(/[^a-z0-9'\-\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function wordOverlapScore(queryWords, windowWords){
+  const pool = new Map();
+  windowWords.forEach(w => pool.set(w, (pool.get(w) || 0) + 1));
+  let hits = 0;
+  queryWords.forEach(w => { if (pool.get(w) > 0){ hits++; pool.set(w, pool.get(w) - 1); } });
+  return hits / Math.max(queryWords.length, windowWords.length);
+}
+
+// Word-level fuzzy search rather than exact substring match — LLM-transcribed
+// evidence quotes drift from the source (smart quotes, collapsed whitespace,
+// line-break hyphenation), so exact matching would miss real hits constantly.
+// Comparing normalized words tolerates that drift while still requiring
+// genuine overlap (threshold below) before claiming a match.
+function findBestWordMatch(pageWords, queryText){
+  const queryWords = normalizeForMatch(queryText).split(' ').filter(Boolean);
+  if (!queryWords.length || !pageWords.length) return null;
+  const pageWordsNorm = pageWords.map(w => normalizeForMatch(w.text));
+
+  const qLen = queryWords.length;
+  const minWin = Math.max(1, Math.floor(qLen * 0.7));
+  const maxWin = Math.min(pageWordsNorm.length, Math.ceil(qLen * 1.3));
+  let best = null;
+
+  for (let start = 0; start < pageWordsNorm.length; start++){
+    for (let winLen = minWin; winLen <= maxWin && start + winLen <= pageWordsNorm.length; winLen++){
+      const score = wordOverlapScore(queryWords, pageWordsNorm.slice(start, start + winLen));
+      if (!best || score > best.score) best = { score, start, end: start + winLen };
+    }
+  }
+  if (!best || best.score < 0.55) return null;
+  return pageWords.slice(best.start, best.end);
+}
+
+// PDF.js gives per-text-item bounding boxes, not per-word — approximate each
+// word's box by splitting its item's box proportionally by character count.
+function extractPageWords(textContent, viewport){
+  const words = [];
+  textContent.items.forEach(item => {
+    if (!item.str || !item.str.trim()) return;
+    const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+    const height = Math.hypot(tx[2], tx[3]) || 10;
+    const width = (item.width || 0) * Math.hypot(viewport.transform[0], viewport.transform[1]);
+    const x0 = tx[4];
+    const y1 = tx[5];
+    const totalChars = item.str.length || 1;
+    let cursor = x0;
+    item.str.split(/(\s+)/).forEach(token => {
+      const tokenWidth = width * (token.length / totalChars);
+      if (token.trim()) words.push({ text: token, x0: cursor, x1: cursor + tokenWidth, y0: y1 - height, y1 });
+      cursor += tokenWidth;
+    });
+  });
+  return words;
+}
+
+// Groups matched words by line (rounded y-position) so a quote spanning
+// multiple lines gets one highlight rect per line, like normal text
+// selection, instead of one box stretching across unrelated content between
+// the first and last matched word.
+function wordsToLineRects(matchedWords){
+  const lines = new Map();
+  matchedWords.forEach(w => {
+    const key = Math.round(w.y0 / 3);
+    const l = lines.get(key);
+    if (!l) lines.set(key, { x0: w.x0, x1: w.x1, y0: w.y0, y1: w.y1 });
+    else { l.x0 = Math.min(l.x0, w.x0); l.x1 = Math.max(l.x1, w.x1); l.y0 = Math.min(l.y0, w.y0); l.y1 = Math.max(l.y1, w.y1); }
+  });
+  return Array.from(lines.values());
+}
+
+// Rendering happens exactly once per document; zoom afterward is pure CSS
+// (see adjustPdfZoom/applyZoomToExistingPages) so clicking +/- is instant
+// instead of re-fetching and re-rendering the whole PDF on every click. The
+// canvas is rasterized at RENDER_DENSITY× the "100%" logical size so zooming
+// in via CSS transform still has real pixel detail to show, not just a
+// blurry stretch of a 1x-density bitmap — the earlier version had neither of
+// these: it re-rendered per click (racing itself when clicked repeatedly,
+// which is why the percentage looked "stuck") and rendered at exactly 1x, so
+// even a successful zoom looked soft.
+const RENDER_DENSITY = 2;
+
+async function renderRealPdfPane(current, sections, renderToken){
+  const pdfjsLib = await waitForPdfjs();
+  const loadingTask = pdfjsLib.getDocument(`/api/submissions/${current.prefix}/pdf`);
+  const pdf = await loadingTask.promise;
+  if (renderToken !== pdfRenderToken) return;
+
+  const sectionsByPage = {};
+  sections.forEach(s => { if (s.page !== 'unknown') (sectionsByPage[s.page] = sectionsByPage[s.page] || []).push(s); });
+  const unmatchedSections = new Set(sections.filter(s => s.page !== 'unknown').map(s => s.id));
+
+  pdfDocScroll.innerHTML = '';
+  pdfZoomControls.style.display = 'flex';
+  pdfZoomLabel.textContent = Math.round(pdfZoomMultiplier * 100) + '%';
+  // "100%" is fit-to-pane-width at render time — a hardcoded scale would
+  // overflow the sidebar for a standard Letter/A4 page. Zoom scales up from
+  // this baseline afterward, purely via CSS.
+  const paneWidth = pdfDocScroll.clientWidth - 48; // 24px padding each side
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++){
+    if (renderToken !== pdfRenderToken) return;
+    const page = await pdf.getPage(pageNum);
+    const unscaled = page.getViewport({ scale: 1 });
+    const baseScale = Math.max(0.4, Math.min(2, paneWidth / unscaled.width));
+    const baseViewport = page.getViewport({ scale: baseScale }); // "100%" logical size — highlights are positioned in this coordinate space
+    const renderViewport = page.getViewport({ scale: baseScale * RENDER_DENSITY }); // actual canvas pixel buffer, higher-density
+
+    const outer = document.createElement('div');
+    outer.className = 'pdf-page-zoom-wrap';
+    const wrap = document.createElement('div');
+    wrap.className = 'pdf-real-page';
+    wrap.dataset.baseWidth = baseViewport.width;
+    wrap.dataset.baseHeight = baseViewport.height;
+    wrap.style.width = baseViewport.width + 'px';
+    wrap.style.height = baseViewport.height + 'px';
+    const canvas = document.createElement('canvas');
+    canvas.width = renderViewport.width;
+    canvas.height = renderViewport.height;
+    wrap.appendChild(canvas);
+    outer.appendChild(wrap);
+    pdfDocScroll.appendChild(outer);
+    applyZoomToPage(outer, wrap); // sizes `outer` and transforms `wrap` per the current zoom, right from first paint
+
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: renderViewport }).promise;
+
+    const pageSections = sectionsByPage[String(pageNum)];
+    if (pageSections && pageSections.length){
+      const textContent = await page.getTextContent();
+      const pageWords = extractPageWords(textContent, baseViewport);
+      pageSections.forEach((s) => {
+        const matched = findBestWordMatch(pageWords, s.text);
+        if (!matched) return; // no confident match on this page — evidence stays reachable via the rule card, just without a pinpoint box
+        unmatchedSections.delete(s.id);
+        const rects = wordsToLineRects(matched);
+        rects.forEach((r, ri) => {
+          const box = document.createElement('div');
+          box.className = 'pdf-real-highlight';
+          box.dataset.sectionId = s.id;
+          // Every section's own first rect needs the scrollable id — not just
+          // whichever section happens to be first on a given page — or
+          // "Jump to Page" silently fails to scroll for every other section
+          // sharing that page (it stays wherever it last successfully landed).
+          if (ri === 0) box.id = s.id;
+          box.style.left = r.x0 + 'px';
+          box.style.top = r.y0 + 'px';
+          box.style.width = Math.max(4, r.x1 - r.x0) + 'px';
+          box.style.height = Math.max(4, r.y1 - r.y0) + 'px';
+          box.title = s.rules.map(r => r.label).join(' · ');
+          box.addEventListener('click', () => selectSection(s.id));
+          wrap.appendChild(box);
+        });
+      });
+    }
+  }
+
+  if (renderToken !== pdfRenderToken) return;
+  if (unmatchedSections.size){
+    console.warn(`${unmatchedSections.size} evidence quote(s) couldn't be precisely located in the PDF text (page image quality or transcription drift) — still reachable via their rule cards.`);
+  }
+  pdfPaneRenderedPrefix = current.prefix;
+  renderPdfHighlightState();
+}
+
+function currentActiveSectionIds(){
+  if (selectedSectionId) return new Set([selectedSectionId]);
+  if (selectedRuleKey){
+    const detail = detailCache[selectedPrefix];
+    if (!detail) return null;
+    const { sections } = collectSections(detail);
+    return new Set(sections.filter(s => s.rules.some(r => r.key === selectedRuleKey)).map(s => s.id));
+  }
+  return null;
+}
+
+// Selecting a rule (clicking a suggestion card) highlights every section it
+// cites and scrolls to the first one — the "rule -> PDF" direction. Rebuilds
+// via renderWorkspace so the card itself also picks up its selected styling;
+// the scroll happens *after* that rebuild since it replaces the PDF pane's
+// DOM (and would otherwise silently undo an earlier scroll).
+function selectRule(ruleKey){
+  selectedRuleKey = ruleKey;
+  selectedSectionId = null;
+  sectionRuleFilter = null;
+  pdfSidebar.classList.add('open');
+  togglePdfBtn.classList.add('active');
+  renderWorkspace();
+  const activeIds = currentActiveSectionIds();
+  const firstId = activeIds && [...activeIds][0];
+  if (firstId) scrollToSection(firstId);
+}
+
+// Selecting one highlighted passage in the PDF pane dims every other
+// passage and filters the rule deck down to whichever rule(s) cite this
+// exact passage — the "PDF -> rule" direction. A passage may support more
+// than one rule (see collectSections above), in which case all of them
+// stay visible in the filtered deck. Also rebuilds via renderWorkspace
+// (through applyRuleDeckFilter), so the scroll likewise has to wait until
+// after that rebuild replaces the PDF pane's DOM.
+function selectSection(sectionId){
+  const detail = detailCache[selectedPrefix];
+  if (!detail) return;
+  const { sections } = collectSections(detail);
+  const section = sections.find(s => s.id === sectionId);
+  if (!section) return;
+
+  // Clicking the already-selected section again clears the selection.
+  if (selectedSectionId === sectionId){
+    clearSectionFilter();
+    return;
+  }
+
+  selectedSectionId = sectionId;
+  selectedRuleKey = null;
+  pdfSidebar.classList.add('open');
+  togglePdfBtn.classList.add('active');
+
+  const ruleKeys = section.rules.filter(r => r.key).map(r => r.key);
+  applyRuleDeckFilter(ruleKeys);
+  scrollToSection(sectionId);
+}
+
+function scrollToSection(sectionId){
+  requestAnimationFrame(() => {
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
+
+// Expands every module that has a matching rule (so a passage shared across
+// modules doesn't hide half its rules behind a collapsed column) and hides
+// every non-matching rule card, same mechanism as the status filter pills.
+function applyRuleDeckFilter(ruleKeys){
+  sectionRuleFilter = new Set(ruleKeys);
+  if (ruleKeys.length){
+    const modules = new Set();
+    document.querySelectorAll('.rule-item-card').forEach(card => {
+      if (sectionRuleFilter.has(card.dataset.sourceKey)) modules.add(card.closest('.deck-col').dataset.module);
+    });
+    expandedModules = modules;
+  }
+  renderWorkspace();
+}
+
+function clearSectionFilter(){
+  sectionRuleFilter = null;
+  selectedSectionId = null;
+  selectedRuleKey = null;
+  renderWorkspace();
+}
+
+/* ============================================================
+   DOC SWITCHER (top navbar dropdown)
+   ============================================================ */
+function renderDocMenu(){
+  docMenuList.innerHTML = '';
+  docBtn.disabled = submissions.length === 0;
 
   if (submissions.length === 0){
-    fileBtnLabel.textContent = 'No files yet';
+    docPrefixBadge.style.display = 'none';
+    docBtnLabel.textContent = 'No files yet';
+    docMenuList.innerHTML = '<div class="doc-empty-note">Nothing in the input/output folders yet.</div>';
     return;
   }
 
   submissions.forEach(s => {
     const item = document.createElement('div');
-    item.className = 'file-item' + (s.prefix === selectedPrefix ? ' active' : '');
+    item.className = 'doc-item' + (s.prefix === selectedPrefix ? ' active' : '');
     let tagHtml = '';
-    if (!s.output){
-      tagHtml = `<div class="file-item-tag pending">Analysis pending</div>`;
-    } else if (!s.input){
-      tagHtml = `<div class="file-item-tag missing-source">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg>
-        Source PDF unavailable
-      </div>`;
-    }
+    if (!s.output) tagHtml = '<div class="doc-item-tag pending">Analysis pending</div>';
+    else if (!s.input) tagHtml = '<div class="doc-item-tag missing-source">Source PDF unavailable</div>';
     item.innerHTML = `
-      <div class="file-item-row">
-        <span class="file-item-prefix">${s.prefix}</span>
-        <span class="file-item-name">${s.filename}</span>
+      <div class="doc-item-row">
+        <span class="doc-prefix-badge">${s.prefix}</span>
+        <span class="doc-item-name">${s.filename}</span>
       </div>
       ${tagHtml}
     `;
     item.addEventListener('click', () => selectFile(s.prefix));
-    fileMenuList.appendChild(item);
+    docMenuList.appendChild(item);
   });
 
   const current = viewableSubmissions().find(s => s.prefix === selectedPrefix);
-  fileBtnLabel.textContent = current ? current.filename : 'No submissions yet';
+  if (current){
+    docPrefixBadge.style.display = 'inline-block';
+    docPrefixBadge.textContent = current.prefix;
+    docBtnLabel.textContent = current.filename;
+  } else {
+    docPrefixBadge.style.display = 'none';
+    docBtnLabel.textContent = 'Select a submission…';
+  }
 }
 
-// A single upload may be a combined Management Liability document, so it
-// can cover anywhere from one to all four modules — always show all four,
-// each with its actual status, rather than hiding the ones that aren't
-// present. RULE-000 always classifies all four regardless of what's
-// displayed; this is purely a rendering choice.
-function buildCoverageSnapshot(coverage){
-  const wrap = document.createElement('div');
-  wrap.className = 'coverage-snapshot';
+/* ============================================================
+   WORKSPACE — coverage cards + the 4-column rules deck.
+   ============================================================ */
+function moduleTitle(coverage, i){ return (coverage[i] && coverage[i].module) || MODULES[i].fallbackTitle; }
 
-  const rows = (coverage || []).map(c => {
-    const details = [c.limit, c.retention ? `${c.retention} retention` : null].filter(Boolean).join(' · ');
-    return `
-      <div class="coverage-panel status-${c.status}">
-        <span class="coverage-panel-dot"></span>
-        <div>
-          <div class="coverage-panel-name">${c.module}</div>
-          ${details ? `<div class="coverage-panel-detail">${details}</div>` : ''}
-        </div>
-        <span class="coverage-panel-status">${coverageStatusLabel[c.status] || c.status}</span>
+// Cards default-sort with the issues that need attention first, not by
+// rule number — Optimization, then Manual Review, then Pass.
+const STATUS_SORT_ORDER = { optimization: 0, 'manual-review': 1, pass: 2 };
+function flagsForModule(flags, code){
+  return (flags || [])
+    .filter(f => f.id && f.id.toUpperCase().startsWith(code + '-'))
+    .sort((a, b) => (STATUS_SORT_ORDER[a.status] ?? 99) - (STATUS_SORT_ORDER[b.status] ?? 99));
+}
+
+function countByStatus(flags){
+  const c = { pass: 0, optimization: 0, 'manual-review': 0 };
+  flags.forEach(f => { if (c[f.status] !== undefined) c[f.status]++; });
+  return c;
+}
+
+// Thin horizontal bar by default — module code, name, and status only.
+// Everything else (limit/retention, rule-status counts, evidence) lives
+// behind one unified <details> dropdown, same "hide it until asked for"
+// principle as the rule cards' evidence used to use alone. openDetailsIds
+// is captured from the DOM immediately before this whole section gets
+// rebuilt (see renderWorkspace) and fed back in here so a poll tick doesn't
+// silently slam every open dropdown shut again.
+function buildCoverageCardHtml(c, i, moduleFlags, openDetailsIds){
+  const code = MODULES[i].code;
+  const title = moduleTitle([c], 0) || MODULES[i].fallbackTitle;
+  const tagClass = statusTagClass[c.status] || 'not-present';
+  const tagLabel = statusTagLabel[c.status] || c.status;
+  const persistId = `cov-details-${code}`;
+  const isOpen = openDetailsIds.has(persistId);
+
+  let metricsLine;
+  if (c.status === 'present'){
+    metricsLine = `${c.limit || 'Not Stated'}${c.retention ? ' · ' + c.retention + ' retention' : ''}`;
+  } else if (c.status === 'not-present'){
+    metricsLine = 'Not Purchased';
+  } else {
+    metricsLine = c.limit || 'Requires manual review';
+  }
+
+  const counts = countByStatus(moduleFlags);
+  let pillsHtml;
+  if (c.status === 'not-present'){
+    pillsHtml = `<span style="font-size:11px; color:var(--text-4);">0 Rules — Ineligible</span>`;
+  } else {
+    const pills = [];
+    if (counts.optimization) pills.push(`<span class="summary-pill opt">${counts.optimization} Opt</span>`);
+    if (counts['manual-review']) pills.push(`<span class="summary-pill rev">${counts['manual-review']} Rev</span>`);
+    if (counts.pass) pills.push(`<span class="summary-pill pass">${counts.pass} Pass</span>`);
+    pillsHtml = pills.join('') || `<span style="font-size:11px; color:var(--text-4);">0 Rules</span>`;
+  }
+
+  let evidenceHtml = '';
+  const firstEv = (c.evidence || [])[0];
+  if (firstEv){
+    const info = extractPageInfo(firstEv.quote);
+    const pageLabel = info.page ? `Page ${info.page}${info.detail ? ', ' + info.detail : ''}` : 'Page unknown';
+    evidenceHtml = `
+      <div class="card-evidence-snippet">
+        <div class="ev-header-line"><span>Evidence</span><span>${pageLabel}</span></div>
+        <p class="ev-quote-text">"${stripQuoteMarks(info.text)}"</p>
       </div>`;
-  }).join('');
+  }
 
-  wrap.innerHTML = `<div class="coverage-snapshot-label">Coverage</div>${rows}`;
-  return wrap;
+  return `
+    <div class="coverage-bar${expandedModules.has(code) ? ' selected' : ''}" data-module="${code}">
+      <div class="coverage-bar-head" onclick="toggleModule('${code}')">
+        <span class="module-code">${code}</span>
+        <span class="coverage-bar-title" title="${title}">${title}</span>
+        <span class="status-tag ${tagClass}">${tagLabel}</span>
+      </div>
+      <details class="coverage-bar-details" data-persist-id="${persistId}"${isOpen ? ' open' : ''}>
+        <summary>Details</summary>
+        <div class="coverage-bar-body">
+          <div class="coverage-bar-metrics">${metricsLine}</div>
+          <div class="card-summary-pills">${pillsHtml}</div>
+          ${evidenceHtml}
+        </div>
+      </details>
+    </div>`;
 }
 
-function renderFlagsContent(){
+function buildRuleCardHtml(f, flagIndex, sectionIdBySourceKey){
+  const sourceKey = `flag${flagIndex}`;
+  const cls = flagClass[f.status] || 'rev';
+  const label = flagLabel[f.status] || f.status;
+  const evidence = f.evidence || [];
+  const isSelected = selectedRuleKey === sourceKey;
+
+  const rows = [];
+  if (f.finding) rows.push(`<p class="rule-finding-body">${f.finding}</p>`);
+  if (f.recommendation) rows.push(`<div class="rule-recommendation-box"><div class="rec-label-eyebrow">Recommendation</div>${f.recommendation}</div>`);
+  evidence.forEach((e, idx) => {
+    const info = extractPageInfo(e.quote);
+    const sectionId = sectionIdBySourceKey[`${sourceKey}-${idx}`];
+    rows.push(`
+      <div class="rule-evidence-box">
+        <div class="ev-meta-line">
+          <span>${e.label ? 'Evidence — ' + e.label : 'Evidence'}</span>
+          ${jumpEvidenceButton(sectionId, info.page)}
+        </div>
+        <div class="ev-quote-string">"${stripQuoteMarks(info.text)}"</div>
+      </div>`);
+  });
+  if (f.reasoning) rows.push(`<p class="rule-reasoning-body">${f.reasoning}</p>`);
+  if (f.confidence) rows.push(`<div class="rule-confidence-line">Confidence: ${f.confidence}</div>`);
+
+  return `
+    <div class="rule-item-card ${cls}${isSelected ? ' rule-selected' : ''}" data-source-key="${sourceKey}" onclick="selectRule('${sourceKey}')">
+      <div class="rule-header-row">
+        <div>
+          ${f.id ? `<span class="rule-id-label">${f.id}</span>` : ''}
+          <div class="rule-headline">${f.name}</div>
+        </div>
+        <span class="rule-pill-badge ${cls}">${label}</span>
+      </div>
+      ${rows.join('')}
+    </div>`;
+}
+
+function buildColumnHtml(code, title, moduleFlags, coverageStatus, allFlags, sectionIdBySourceKey){
+  const counts = countByStatus(moduleFlags);
+  const stripPills = [];
+  if (counts.optimization) stripPills.push(`<span class="strip-pill" style="background:var(--opt-bg); color:var(--opt-color);">${counts.optimization} Opt</span>`);
+  if (counts['manual-review']) stripPills.push(`<span class="strip-pill" style="background:var(--rev-bg); color:var(--rev-color);">${counts['manual-review']} Rev</span>`);
+  if (counts.pass) stripPills.push(`<span class="strip-pill" style="background:var(--pass-bg); color:var(--pass-color);">${counts.pass} Pass</span>`);
+  if (!stripPills.length) stripPills.push(`<span class="strip-pill" style="background:#f1f5f9; color:var(--text-3);">0</span>`);
+
+  let feedHtml;
+  if (coverageStatus === 'not-present'){
+    feedHtml = `<div class="empty-state-view">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg>
+      <div class="es-title">Coverage Not Present</div>
+      <p>Rules were skipped by the evaluation chain because this module wasn't purchased.</p>
+    </div>`;
+  } else if (coverageStatus === 'manual-review'){
+    feedHtml = `<div class="empty-state-view">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg>
+      <div class="es-title">Classification Needs Review</div>
+      <p>RULE-000 couldn't reliably classify this module, so its rules did not run.</p>
+    </div>`;
+  } else if (!moduleFlags.length){
+    feedHtml = `<div class="empty-state-view">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg>
+      <div class="es-title">No rules evaluated</div>
+      <p>No results for this module yet.</p>
+    </div>`;
+  } else {
+    feedHtml = moduleFlags.map(f => buildRuleCardHtml(f, allFlags.indexOf(f), sectionIdBySourceKey)).join('');
+  }
+
+  return `
+    <div class="deck-col${expandedModules.has(code) ? ' expanded' : ''}" data-module="${code}">
+      <div class="col-top-bar" onclick="toggleModule('${code}')">
+        <div class="col-title-group">
+          <span class="module-code">${code}</span>
+          <span class="col-main-title">${title}</span>
+          <span class="col-count-bubble">${moduleFlags.length}</span>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+      </div>
+      <div class="col-strip-view" onclick="toggleModule('${code}')">
+        <span class="module-code">${code}</span>
+        <div class="strip-pills">${stripPills.join('')}</div>
+        <span class="strip-vertical-title">${title}</span>
+      </div>
+      <div class="col-scroll-feed">${feedHtml}</div>
+    </div>`;
+}
+
+function applyFilterAndSearch(){
+  const q = searchQuery.trim().toLowerCase();
+  // activeFilter holds the status name ('optimization'/'manual-review'/'pass')
+  // from the pill's data-filter, but the card's actual CSS class is the
+  // shorter flagClass mapping ('opt'/'rev'/'pass') — translate before
+  // comparing, or 'optimization'/'manual-review' never match anything
+  // (only 'pass' happened to be spelled the same both ways).
+  const filterClass = activeFilter === 'all' ? null : flagClass[activeFilter];
+  document.querySelectorAll('.rule-item-card').forEach(card => {
+    const matchesFilter = !filterClass || card.classList.contains(filterClass);
+    const matchesSearch = !q || card.textContent.toLowerCase().includes(q);
+    const matchesSection = !sectionRuleFilter || sectionRuleFilter.has(card.dataset.sourceKey);
+    card.style.display = (matchesFilter && matchesSearch && matchesSection) ? 'flex' : 'none';
+  });
+}
+
+function renderWorkspace(){
+  // renderWorkspace rebuilds the whole panel — including the search input —
+  // on every poll tick (every 3s), not just on explicit user actions. Without
+  // this, that rebuild silently wipes out whatever the user is mid-typing and
+  // steals focus out of the field every few seconds. Capture/restore around
+  // the rebuild so typing feels uninterrupted regardless of what triggered it.
+  const prevSearchInput = document.getElementById('rulesSearchInput');
+  const searchHadFocus = !!prevSearchInput && document.activeElement === prevSearchInput;
+  const searchCaret = searchHadFocus ? prevSearchInput.selectionStart : null;
+
+  // Same problem, same fix, for the coverage cards' <details> dropdowns —
+  // capture which ones are open before the rebuild so a poll tick doesn't
+  // silently close whatever the user just opened.
+  const openDetailsIds = new Set();
+  document.querySelectorAll('details[data-persist-id]').forEach(d => {
+    if (d.open) openDetailsIds.add(d.dataset.persistId);
+  });
+
   const current = viewableSubmissions().find(s => s.prefix === selectedPrefix);
 
   if (!current){
-    flagsInner.innerHTML = `
-      <div class="state-msg">
-        <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg></div>
-        <h2>Waiting for a submission</h2>
-        <p>Drop a D&amp;O policy into Copilot to start a review — it'll show up here as soon as it's uploaded.</p>
-      </div>`;
+    workspaceScroll.innerHTML = `<div class="workspace-empty"><div class="empty-state-view">
+      <div class="icon-ring"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--text-3)" stroke-width="2"><path d="M4 4v16h16V8l-6-4H4z"/><path d="M14 4v4h4"/></svg></div>
+      <div class="es-title">Waiting for a submission</div>
+      <p>Drop a D&amp;O policy into Copilot to start a review — it'll show up here as soon as it's uploaded.</p>
+    </div></div>`;
+    buildPdfPane(null, null);
     return;
   }
 
   if (!current.output){
-    flagsInner.innerHTML = `
-      <div class="state-msg">
-        <div class="icon-ring"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></div>
-        <h2>Analysis in progress</h2>
-        <p>${current.filename} has been received. Flags will appear here as soon as CoverageIQ finishes reviewing it.</p>
-      </div>`;
+    workspaceScroll.innerHTML = `<div class="workspace-empty"><div class="empty-state-view">
+      <div class="icon-ring"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--text-3)" stroke-width="2"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></div>
+      <div class="es-title">Analysis in progress</div>
+      <p>${current.filename} has been received. Flags will appear here as soon as CoverageIQ finishes reviewing it.</p>
+    </div></div>`;
+    buildPdfPane(current, { coverage: [], flags: [] });
     return;
   }
 
   const detail = detailCache[current.prefix] || { coverage: [], flags: [] };
-  flagsInner.innerHTML = '';
-  flagsInner.appendChild(buildCoverageSnapshot(detail.coverage));
-  detail.flags.forEach((f, i) => {
-    const evidence = f.evidence || [];
-    const rows = [];
-    if (f.finding) rows.push(`<div class="ev-row"><div class="ev-label">Finding</div><div class="ev-text">${f.finding}</div></div>`);
-    if (f.recommendation) rows.push(`<div class="ev-row"><div class="ev-label">Recommendation</div><div class="ev-mono suggested">${f.recommendation}</div></div>`);
-    evidence.forEach(e => {
-      rows.push(`<div class="ev-row"><div class="ev-label">${e.label ? `Evidence — ${e.label}` : 'Evidence'}</div><div class="ev-mono">${e.quote}</div></div>`);
-    });
-    if (f.reasoning) rows.push(`<div class="ev-row"><div class="ev-label">Reasoning</div><div class="ev-text">${f.reasoning}</div></div>`);
-    if (f.confidence) rows.push(`<div class="ev-row"><div class="ev-label">Confidence</div><div class="ev-text">${f.confidence}</div></div>`);
+  const coverage = detail.coverage || [];
+  const flags = detail.flags || [];
+  const { sectionIdBySourceKey } = collectSections(detail);
 
-    const block = document.createElement('div');
-    block.className = `flag-block status-${f.status}`;
-    block.innerHTML = `
-      <div class="flag-head">
-        <div>
-          <div class="flag-eyebrow">Suggestion Flag 0${i+1}${f.id ? ` · ${f.id}` : ''}</div>
-          <div class="flag-name">${f.name}</div>
-        </div>
-        <span class="badge ${f.status}">${badgeLabel[f.status]}</span>
-      </div>
-      ${rows.length ? `<div class="evidence-panel">${rows.join('')}</div>` : ''}
-    `;
-    flagsInner.appendChild(block);
-  });
-}
-
-function refreshChrome(){
-  renderMenu();
-  const current = viewableSubmissions().find(s => s.prefix === selectedPrefix);
-  pdfTab.style.display = current ? 'flex' : 'none';
-  if (current){
-    pdfPaneTitle.textContent = current.filename;
-    const sourceMissing = !current.input;
-    pdfPlaceholderWrap.style.display = sourceMissing ? 'none' : 'flex';
-    pdfUnavailableMsg.style.display = sourceMissing ? 'flex' : 'none';
+  // Default the first PRESENT module to expanded, matching the mockup's
+  // "one focused column" default — but only on first load of a submission.
+  if (expandedModules === null){
+    const firstPresent = MODULES.find((m, i) => coverage[i] && coverage[i].status === 'present');
+    expandedModules = new Set(firstPresent ? [firstPresent.code] : []);
   }
+
+  const cardsHtml = MODULES.map((m, i) => {
+    const c = coverage[i] || { module: m.fallbackTitle, status: 'manual-review' };
+    const moduleFlags = flagsForModule(flags, m.code);
+    return buildCoverageCardHtml(c, i, moduleFlags, openDetailsIds);
+  }).join('');
+
+  const columnsHtml = MODULES.map((m, i) => {
+    const c = coverage[i] || { status: 'manual-review' };
+    const moduleFlags = flagsForModule(flags, m.code);
+    return buildColumnHtml(m.code, moduleTitle(coverage, i), moduleFlags, c.status, flags, sectionIdBySourceKey);
+  }).join('');
+
+  const counts = countByStatus(flags);
+
+  const sectionFilterBannerHtml = sectionRuleFilter ? `
+    <div class="section-filter-banner">
+      <span>${sectionRuleFilter.size ? `Showing rule${sectionRuleFilter.size > 1 ? 's' : ''} for the selected PDF passage` : 'Selected PDF passage supports coverage classification only — no rule cites it directly'}</span>
+      <button class="btn-doc-link" onclick="clearSectionFilter()">Clear</button>
+    </div>` : '';
+
+  workspaceScroll.innerHTML = `
+    <section>
+      <div class="section-headline"><span>Coverage Classification</span><span>RULE-000 Snapshot</span></div>
+      <div class="squares-container">${cardsHtml}</div>
+    </section>
+    <section style="display:flex; flex-direction:column; gap:12px;">
+      <div class="rules-section-bar">
+        <div class="section-headline" style="margin-bottom:0;"><span>Evaluated Skill Rules</span></div>
+        <div class="rules-filter-pills">
+          <input type="text" class="rules-search" id="rulesSearchInput" placeholder="Filter rules..." value="${searchQuery.replace(/"/g, '&quot;')}">
+          <button class="filter-pill${activeFilter === 'all' ? ' active' : ''}" data-filter="all">All</button>
+          <button class="filter-pill${activeFilter === 'optimization' ? ' active' : ''}" data-filter="optimization">Optimization (${counts.optimization})</button>
+          <button class="filter-pill${activeFilter === 'manual-review' ? ' active' : ''}" data-filter="manual-review">Manual Review (${counts['manual-review']})</button>
+          <button class="filter-pill${activeFilter === 'pass' ? ' active' : ''}" data-filter="pass">Pass (${counts.pass})</button>
+        </div>
+      </div>
+      ${sectionFilterBannerHtml}
+      <div class="columns-deck${expandedModules.size ? ' has-expanded' : ''}" id="rulesDeck">${columnsHtml}</div>
+    </section>
+  `;
+
+  document.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.filter;
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilterAndSearch();
+    });
+  });
+  const searchInput = document.getElementById('rulesSearchInput');
+  searchInput.addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    applyFilterAndSearch();
+  });
+  if (searchHadFocus){
+    searchInput.focus();
+    searchInput.setSelectionRange(searchCaret, searchCaret);
+  }
+  applyFilterAndSearch();
+
+  buildPdfPane(current, detail);
 }
+
+function toggleModule(code){
+  const isOnlyExpanded = expandedModules && expandedModules.size === 1 && expandedModules.has(code);
+  expandedModules = isOnlyExpanded ? new Set() : new Set([code]);
+  // A manual column click overrides whatever a section selection was showing.
+  sectionRuleFilter = null;
+  selectedSectionId = null;
+  selectedRuleKey = null;
+  renderWorkspace();
+}
+
+resetDeckBtn.addEventListener('click', () => {
+  expandedModules = new Set();
+  activeFilter = 'all';
+  searchQuery = '';
+  sectionRuleFilter = null;
+  selectedSectionId = null;
+  selectedRuleKey = null;
+  renderWorkspace();
+});
+
+/* ---------- selection / polling ---------- */
 
 async function selectFile(prefix){
-  if (prefix === selectedPrefix || loaderPlaying) return;
-  fileMenu.classList.remove('show');
-  fileBtn.classList.remove('open');
+  if (prefix === selectedPrefix || isSwitching) return;
+  docMenu.classList.remove('show');
+  docBtn.classList.remove('open');
 
   const target = viewableSubmissions().find(s => s.prefix === prefix);
   if (!target) return;
 
-  // Only fetch (and cache) detail once analysis actually exists — fetching
-  // while still pending would permanently cache an empty result and hide
-  // the real analysis once it lands.
-  if (isFirstRender){
-    if (target.output) await fetchDetail(prefix);
-    selectedPrefix = prefix;
-    refreshChrome();
-    renderFlagsContent();
-    isFirstRender = false;
-    return;
-  }
-
-  loaderPlaying = true;
-  fileBtn.disabled = true;
+  isSwitching = true;
   loaderFname.textContent = target.filename;
   loaderOverlay.classList.add('show');
 
+  // Only fetch (and cache) detail once analysis actually exists — fetching
+  // while still pending would permanently cache an empty result and hide
+  // the real analysis once it lands.
   const detailPromise = target.output ? fetchDetail(prefix) : Promise.resolve();
   loaderEngine.playReverseCompressed(detailPromise, () => {
     selectedPrefix = prefix;
-    refreshChrome();
-    renderFlagsContent();
+    expandedModules = null; // re-pick the default-expanded module for the new submission
+    activeFilter = 'all';
+    searchQuery = '';
+    sectionRuleFilter = null;
+    selectedSectionId = null;
+    selectedRuleKey = null;
+
+    renderDocMenu();
+    renderWorkspace();
     loaderOverlay.classList.remove('show');
-    loaderPlaying = false;
-    fileBtn.disabled = false;
+    isSwitching = false;
   });
 }
 
-/* ---------- wiring ---------- */
-
-fileBtn.addEventListener('click', () => {
-  fileMenu.classList.toggle('show');
-  fileBtn.classList.toggle('open');
+docBtn.addEventListener('click', () => {
+  docMenu.classList.toggle('show');
+  docBtn.classList.toggle('open');
 });
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.file-dropdown')){
-    fileMenu.classList.remove('show');
-    fileBtn.classList.remove('open');
+  if (!e.target.closest('.doc-dropdown')){
+    docMenu.classList.remove('show');
+    docBtn.classList.remove('open');
   }
 });
 
-pdfTab.addEventListener('click', () => workspace.classList.add('pdf-open'));
-pdfClose.addEventListener('click', () => workspace.classList.remove('pdf-open'));
+togglePdfBtn.addEventListener('click', () => {
+  pdfSidebar.classList.toggle('open');
+  togglePdfBtn.classList.toggle('active');
+});
+closePdfBtn.addEventListener('click', () => {
+  pdfSidebar.classList.remove('open');
+  togglePdfBtn.classList.remove('active');
+});
 
-/* ---------- init + polling ---------- */
+// Resizes the outer box and transform-scales the inner (already-rendered)
+// page to match the current zoom — pure CSS, no re-render.
+function applyZoomToPage(outer, wrap){
+  const baseW = parseFloat(wrap.dataset.baseWidth);
+  const baseH = parseFloat(wrap.dataset.baseHeight);
+  outer.style.width = (baseW * pdfZoomMultiplier) + 'px';
+  outer.style.height = (baseH * pdfZoomMultiplier) + 'px';
+  wrap.style.transform = `scale(${pdfZoomMultiplier})`;
+}
+function applyZoomToExistingPages(){
+  document.querySelectorAll('.pdf-real-page').forEach(wrap => applyZoomToPage(wrap.parentElement, wrap));
+}
+
+function adjustPdfZoom(delta){
+  pdfZoomMultiplier = Math.max(0.5, Math.min(4, Math.round((pdfZoomMultiplier + delta) * 20) / 20));
+  pdfZoomLabel.textContent = Math.round(pdfZoomMultiplier * 100) + '%';
+  if (document.querySelector('.pdf-real-page')){
+    applyZoomToExistingPages();
+  } else {
+    renderWorkspace(); // pages aren't rendered yet at all — nothing to CSS-scale
+  }
+}
+pdfZoomOutBtn.addEventListener('click', () => adjustPdfZoom(-0.2));
+pdfZoomInBtn.addEventListener('click', () => adjustPdfZoom(0.2));
+
+// Drag-resize the whole PDF pane's width, independent of the content zoom
+// above (which scales what's rendered *within* a fixed-width pane) — this
+// changes how much pane there is in the first place.
+let pdfResizing = false;
+pdfResizeHandle.addEventListener('mousedown', (e) => {
+  pdfResizing = true;
+  pdfResizeHandle.classList.add('active');
+  pdfSidebar.classList.add('resizing');
+  e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!pdfResizing) return;
+  const newWidth = Math.max(320, Math.min(window.innerWidth - 400, window.innerWidth - e.clientX));
+  pdfSidebar.style.flexBasis = newWidth + 'px';
+  pdfSidebar.style.width = newWidth + 'px';
+});
+window.addEventListener('mouseup', () => {
+  if (!pdfResizing) return;
+  pdfResizing = false;
+  pdfResizeHandle.classList.remove('active');
+  pdfSidebar.classList.remove('resizing');
+});
 
 async function initDashboard(){
   await fetchSubmissions();
@@ -783,35 +1789,36 @@ async function initDashboard(){
     selectedPrefix = viewable[0].prefix;
     if (viewable[0].output) await fetchDetail(selectedPrefix);
   }
-  isFirstRender = false;
-  refreshChrome();
-  renderFlagsContent();
+  renderDocMenu();
+  renderWorkspace();
   setInterval(poll, POLL_INTERVAL_MS);
 }
 
-// Background polling never plays the loading transition (reserved for
-// explicit dropdown switches) — it just quietly re-renders. It also has to
-// keep watching the *currently selected* submission even when selection
-// hasn't changed, since a pending submission can flip to analysis-ready
-// between ticks and needs its detail fetched (once) and re-rendered.
+// Background polling keeps watching the *currently selected* submission even
+// when selection hasn't changed, since a pending submission can flip to
+// analysis-ready between ticks and needs its detail fetched (once) and
+// re-rendered.
 async function poll(){
-  if (loaderPlaying) return;
+  if (isSwitching) return;
   await fetchSubmissions();
   const viewable = viewableSubmissions();
   const stillHasSelection = viewable.some(s => s.prefix === selectedPrefix);
 
   if (!stillHasSelection){
     selectedPrefix = viewable.length ? viewable[0].prefix : null;
+    expandedModules = null;
+    sectionRuleFilter = null;
+    selectedSectionId = null;
+    selectedRuleKey = null;
   }
 
   const current = viewable.find(s => s.prefix === selectedPrefix);
   if (current && current.output && !detailCache[current.prefix]){
     await fetchDetail(current.prefix);
   }
-  renderFlagsContent();
-  refreshChrome();
+  renderDocMenu();
+  renderWorkspace();
 }
 </script>
-
 </body>
 </html>

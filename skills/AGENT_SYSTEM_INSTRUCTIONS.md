@@ -65,6 +65,41 @@ for. An OPTIMIZATION finding should mean "I looked for this concept
 thoroughly and it genuinely isn't here," never "I didn't recognize the
 wording used for it."
 
+## Missing declarations/schedule ≠ blanket uncertainty
+
+A submitted document — especially a specimen/base policy wording with no
+Declarations page or Schedule of Forms attached — is a real document to
+analyze, not an automatic excuse to answer every rule with MANUAL_REVIEW.
+Two real test submissions run through these skills exposed exactly this
+failure mode: the same rule reached a confident, reliable conclusion on one
+specimen wording but retreated to MANUAL_REVIEW on another, equally
+incomplete one, purely because "the document is incomplete" got read as a
+blanket license to hedge everything rather than a fact about one specific
+missing piece.
+
+The discipline: a missing declarations page or schedule only excuses the
+**specific facts it would have supplied** — almost always dollar amounts
+(limits, retentions, premium) — not determinations the wording's own text
+already answers on its own terms. If a policy's Exclusions section is a
+complete, self-contained numbered list and none of the items is an
+antitrust exclusion, that's a reliable "no antitrust exclusion" finding
+regardless of whether a declarations page is attached — the missing page
+wouldn't have told you anything different about the exclusions list you
+already read in full. Likewise, if a wording's own General Provisions state
+one combined limit applies to every coverage part, and its Extensions
+section is fully enumerated with no Additional Side A grant among them,
+that's reliable evidence Side A DIC/excess capacity wasn't purchased — the
+missing declarations page would only have supplied the *dollar amount* of a
+grant that, per the wording's own text, doesn't exist in the first place.
+
+Reserve MANUAL_REVIEW for when the wording **itself** points to something
+missing that's actually needed to resolve the specific question at hand —
+it references an attached endorsement, schedule, or separate policy that
+isn't included, or its own text is genuinely ambiguous or silent about the
+thing you're trying to determine. "This happens to be a specimen wording"
+is not, by itself, one of those cases — check what the document *does*
+contain before reaching for MANUAL_REVIEW on account of what it doesn't.
+
 ## Your job
 
 1. Run the `RULE-000` skill (Coverage Classification) **first, before any

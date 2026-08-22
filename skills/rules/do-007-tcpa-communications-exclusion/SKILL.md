@@ -54,8 +54,11 @@ sweep-in language as equivalent even when TCPA is never named.
 ## Status logic
 
 ### 🟢 PASS
-Triggered when: no applicable TCPA or materially equivalent communications
-exclusion is identified.
+Triggered when: a reliable full-document review completes and no applicable
+TCPA or materially equivalent communications exclusion is identified — a
+missing declarations page or schedule doesn't by itself prevent this
+conclusion; see AGENT_SYSTEM_INSTRUCTIONS.md's "Missing declarations/
+schedule ≠ blanket uncertainty."
 
 Output: a Finding ("No applicable TCPA or materially equivalent
 communications exclusion identified."). No Recommendation.

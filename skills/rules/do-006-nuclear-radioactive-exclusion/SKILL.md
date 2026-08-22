@@ -40,6 +40,18 @@ this exclusion: Nuclear Energy Liability Exclusion / NEIL / MAELU
 Insurers) / Price-Anderson Act — a reference to any of these is evidence of
 this exclusion even without the word "nuclear" appearing nearby.
 
+**Efficiency note — check first whether DO-005 already found the answer.**
+In real testing, nuclear/radioactive language turned up folded into the
+*same* broad "Pollutants" or hazardous-substances definition that DO-005
+(Pollution Exclusion) evaluates — one definition sweeping in both pollution
+and nuclear/radiological material, with the exclusionary effect living in
+neither section's caption but in how that definition is used elsewhere
+(e.g. carved out of what counts as recoverable "Loss"). If DO-005 already
+located and read that definition for this same document, re-read it here
+for nuclear/radiological language rather than re-searching the whole
+document from scratch — they're often one inferential step apart, not two
+independent searches.
+
 ## Decision steps
 1. Locate nuclear/radioactive-related exclusionary language and determine
    whether it actually excludes or restricts coverage under the
@@ -52,7 +64,10 @@ this exclusion even without the word "nuclear" appearing nearby.
 ## Status logic
 
 ### 🟢 PASS
-Triggered when: no applicable Nuclear-Based Exclusion is identified.
+Triggered when: a reliable full-document review completes and no applicable
+Nuclear-Based Exclusion is identified — a missing declarations page or
+schedule doesn't by itself prevent this conclusion; see AGENT_SYSTEM_
+INSTRUCTIONS.md's "Missing declarations/schedule ≠ blanket uncertainty."
 
 Output: a Finding ("No applicable Nuclear-Based Exclusion identified.").
 No Recommendation.
