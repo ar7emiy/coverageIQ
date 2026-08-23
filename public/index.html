@@ -874,9 +874,19 @@ function viewableSubmissions(){ return submissions.filter(s => s.input || s.outp
    link straight to it — no real PDF.js/OCR needed for this to work.
    ============================================================ */
 function extractPageInfo(quote){
-  const m = quote.match(/\(Page\s+([^,)]+)(?:,\s*([^)]+))?\)\s*$/i);
+  // Accepts both "(Page 11, ...)" and "(Pages 8-10, ...)" — evidence citing a
+  // range used to fail this match entirely (singular "Page" only), silently
+  // dropping to "Page unknown" even though a page was right there in the text.
+  const m = quote.match(/\(Pages?\s+([^,)]+)(?:,\s*([^)]+))?\)\s*$/i);
   if (!m) return { page: null, detail: null, text: quote };
   return { page: m[1].trim(), detail: m[2] ? m[2].trim() : null, text: quote.slice(0, m.index).trim() };
+}
+// For a range like "8-10" this is the page to attempt highlighting/scrolling
+// on; for a plain "11" it's just 11. Ranges only ever need one target page.
+function firstPageNumber(pageStr){
+  if (!pageStr) return null;
+  const m = String(pageStr).match(/\d+/);
+  return m ? parseInt(m[0], 10) : null;
 }
 function stripQuoteMarks(text){ return text.replace(/^"/, '').replace(/"$/, ''); }
 function normalizeQuoteText(text){ return text.trim().toLowerCase().replace(/\s+/g, ' '); }
@@ -922,7 +932,7 @@ function collectSections(detail){
     let gi = groupIndexByDedupKey.get(dedupKey);
     if (gi === undefined){
       gi = sections.length;
-      sections.push({ id: `sec-${gi}`, page: r.page, detail: r.detailNote, text: r.text, rules: [] });
+      sections.push({ id: `sec-${gi}`, page: r.page, matchPage: firstPageNumber(r.page), detail: r.detailNote, text: r.text, rules: [] });
       groupIndexByDedupKey.set(dedupKey, gi);
     }
     const section = sections[gi];
@@ -1151,8 +1161,8 @@ async function renderRealPdfPane(current, sections, renderToken){
   if (renderToken !== pdfRenderToken) return;
 
   const sectionsByPage = {};
-  sections.forEach(s => { if (s.page !== 'unknown') (sectionsByPage[s.page] = sectionsByPage[s.page] || []).push(s); });
-  const unmatchedSections = new Set(sections.filter(s => s.page !== 'unknown').map(s => s.id));
+  sections.forEach(s => { if (s.matchPage) (sectionsByPage[s.matchPage] = sectionsByPage[s.matchPage] || []).push(s); });
+  const unmatchedSections = new Set(sections.filter(s => s.matchPage).map(s => s.id));
 
   pdfDocScroll.innerHTML = '';
   pdfZoomControls.style.display = 'flex';
@@ -1171,6 +1181,11 @@ async function renderRealPdfPane(current, sections, renderToken){
 
     const outer = document.createElement('div');
     outer.className = 'pdf-page-zoom-wrap';
+    // Stable id per page, independent of whether any quote on it gets a
+    // pinpoint highlight — "Jump to Page" falls back to this when the fuzzy
+    // text match misses, so the button always lands somewhere instead of
+    // silently doing nothing.
+    outer.id = `pdf-page-${pageNum}`;
     const wrap = document.createElement('div');
     wrap.className = 'pdf-real-page';
     wrap.dataset.baseWidth = baseViewport.width;
@@ -1250,7 +1265,11 @@ function selectRule(ruleKey){
   renderWorkspace();
   const activeIds = currentActiveSectionIds();
   const firstId = activeIds && [...activeIds][0];
-  if (firstId) scrollToSection(firstId);
+  if (firstId){
+    const detail = detailCache[selectedPrefix];
+    const section = detail && collectSections(detail).sections.find(s => s.id === firstId);
+    scrollToSection(firstId, section && section.matchPage);
+  }
 }
 
 // Selecting one highlighted passage in the PDF pane dims every other
@@ -1280,12 +1299,16 @@ function selectSection(sectionId){
 
   const ruleKeys = section.rules.filter(r => r.key).map(r => r.key);
   applyRuleDeckFilter(ruleKeys);
-  scrollToSection(sectionId);
+  scrollToSection(sectionId, section.matchPage);
 }
 
-function scrollToSection(sectionId){
+function scrollToSection(sectionId, fallbackPage){
   requestAnimationFrame(() => {
-    const el = document.getElementById(sectionId);
+    // The pinpoint highlight box only exists when the fuzzy text match found
+    // this quote on the page — when it didn't, fall back to the page itself
+    // (always present, one wrapper per PDF page) so the button still lands
+    // the user on the right page instead of silently doing nothing.
+    const el = document.getElementById(sectionId) || (fallbackPage ? document.getElementById(`pdf-page-${fallbackPage}`) : null);
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });

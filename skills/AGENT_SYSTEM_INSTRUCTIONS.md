@@ -210,9 +210,23 @@ Field rules:
   **Every Evidence line must end with the page number the quote was found
   on**, as `(Page <n>)` — or `(Page <n>, <section/endorsement>)` when a
   section or endorsement reference is also useful. This is required for
-  every quote, not just the first. If the document's pages aren't reliably
-  numbered or determinable, use `(Page unknown)` rather than omitting the
-  citation — never guess a page number.
+  every quote, not just the first.
+
+  `(Page unknown)` is a last resort, not the default for an absence
+  finding. A NOT_PRESENT or "nothing found" result almost always still has
+  a real page to cite: the specific place you checked and confirmed it
+  wasn't there. If the document has a declarations page or schedule listing
+  coverage parts (the same one you're already citing for the parts that
+  *are* present), cite that same page for the part that's absent too — e.g.
+  `"No Fiduciary Liability line item appears among the coverage parts
+  listed" (Page 3, Declarations, Item 4)`, not `(Page unknown)`, since
+  that's the page where it would appear if purchased. If there's no single
+  schedule and you reviewed specific sections instead, cite the section(s)
+  you reviewed with their page numbers (e.g. `(Definitions §2, pp. 2-4;
+  Exclusions §3, pp. 4-9; Extensions §4, pp. 9-11)`). Reserve literal
+  `(Page unknown)` for the genuine edge case where the document's pages
+  aren't reliably numbered at all — never guess a page number, but don't
+  reach for "unknown" when a locatable page is sitting right there.
 - **Reasoning**: include for OPTIMIZATION (why the gap matters) and
   MANUAL_REVIEW (why the status couldn't be reliably determined). Optional
   for PASS.
@@ -241,12 +255,12 @@ Evidence: "Employment Practices Liability — Not Purchased" (Page 3, Declaratio
 ### Fiduciary Liability
 Status: NOT_PRESENT
 Confidence: Medium
-Evidence: "No Fiduciary Liability coverage part, schedule, limit, or premium identified anywhere in the document." (Page unknown)
+Evidence: "No Fiduciary Liability line item appears among the coverage parts listed." (Page 3, Declarations, Item 4)
 
 ### Crime
 Status: NOT_PRESENT
 Confidence: Medium
-Evidence: "No Crime/Fidelity coverage part, schedule, limit, or premium identified anywhere in the document." (Page unknown)
+Evidence: "No Crime/Fidelity line item appears among the coverage parts listed." (Page 3, Declarations, Item 4)
 
 ## DO-001 — Additional Side A Coverage
 Status: PASS

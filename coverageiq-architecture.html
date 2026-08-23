@@ -184,7 +184,7 @@
             <line x1="453" y1="91" x2="504" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
             <text x="478" y="80" text-anchor="middle" class="arrow-label" font-size="10">minutes</text>
             <line x1="696" y1="91" x2="747" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a1)"/>
-            <text x="722" y="80" text-anchor="middle" class="arrow-label" font-size="10">evidence-backed</text>
+            <text x="722" y="80" text-anchor="middle" class="arrow-label" font-size="10">evidence</text>
             <text x="460" y="175" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="currentColor" opacity="0.55">works inside a tool your team already uses — nothing new to learn</text>
           </svg>
         </div>
@@ -227,7 +227,7 @@
             <line x1="200" y1="91" x2="251" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
             <line x1="443" y1="91" x2="494" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
             <line x1="706" y1="91" x2="757" y2="91" stroke="currentColor" stroke-width="1.5" marker-end="url(#a2)"/>
-            <text x="835" y="165" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="currentColor" opacity="0.55">no manual step, anywhere in this line</text>
+            <text x="460" y="175" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="currentColor" opacity="0.55">no manual step, anywhere in this line</text>
           </svg>
         </div>
         <figcaption><strong>The change that matters:</strong> nothing about the review quality changes — the same skill library, the same evidence-first findings. What changes is that it runs on your whole book automatically, hosted on infrastructure your team controls.</figcaption>
@@ -245,7 +245,7 @@
       <div class="state-head"><span class="state-tag current">Current build</span><h2>POC architecture — as it runs today</h2></div>
       <figure>
         <div class="diagram-frame">
-          <svg viewBox="0 0 940 300" role="img" aria-label="A person places a PDF in an input folder. An external Microsoft 365 Copilot agent reads the skill library, evaluates the document, and writes a markdown analysis file to an output folder. A local zero-dependency HTTP server polls both folders every 3 seconds, pairs files by numeric prefix, parses the markdown, and serves it to a vanilla JavaScript frontend that renders the findings and highlights matching text on the real rendered PDF.">
+          <svg viewBox="0 0 940 330" role="img" aria-label="A person places a PDF in an input folder. An external Microsoft 365 Copilot agent reads the skill library, evaluates the document, and writes a markdown analysis file to an output folder. A local zero-dependency HTTP server polls both folders every 3 seconds, pairs files by numeric prefix, parses the markdown, and serves it to a vanilla JavaScript frontend that renders the findings and highlights matching text on the real rendered PDF.">
             <defs>
               <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
                 <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
@@ -281,10 +281,10 @@
             <text x="130" y="150" text-anchor="middle" class="arrow-label" font-size="10">polls</text>
 
             <!-- row 3: frontend -->
-            <rect x="330" y="266" width="280" height="1" fill="none"/>
             <path d="M470,230 C470,250 470,250 470,266" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#a3)"/>
-            <rect x="290" y="266" width="360" height="30" rx="8" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
-            <text x="470" y="286" text-anchor="middle" class="box-title" font-size="12" fill="var(--future)">Frontend — findings + fuzzy-matched PDF evidence highlighting</text>
+            <rect x="250" y="266" width="440" height="50" rx="9" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
+            <text x="470" y="290" text-anchor="middle" class="box-title" font-size="13" fill="var(--future)">Frontend</text>
+            <text x="470" y="307" text-anchor="middle" class="box-sub" font-size="10.5" fill="var(--future)">findings + fuzzy-matched PDF evidence highlighting</text>
           </svg>
         </div>
         <figcaption><strong>What this proves:</strong> the review logic and the evidence-highlighting UX work end-to-end against real policy documents. <strong>What it isn't:</strong> production infrastructure.</figcaption>
@@ -296,7 +296,7 @@
       <div class="state-head"><span class="state-tag future">Production MVP</span><h2>Azure-hosted, portable by design</h2></div>
       <figure>
         <div class="diagram-frame">
-          <svg viewBox="0 0 620 940" role="img" aria-label="The team's policy repository triggers a sync into blob storage, which enqueues a processing job. A containerized worker pool pulls the job, extracts text with OCR fallback, loads the skill library, and calls a pluggable AI model provider. Structured findings are written to a results store and served through an API to the frontend, with Azure AD identity and Azure Monitor observability as cross-cutting layers. The queue, compute, model, and store layers are each swappable for equivalent services on any stack.">
+          <svg viewBox="0 0 680 940" role="img" aria-label="The team's policy repository triggers a sync into blob storage, which enqueues a processing job. A containerized worker pool pulls the job, extracts text with OCR fallback, loads the skill library, and calls a pluggable AI model provider. Structured findings are written to a results store and served through an API to the frontend, with Azure AD identity and Azure Monitor observability as cross-cutting layers. The queue, compute, model, and store layers are each swappable for equivalent services on any stack.">
             <defs>
               <marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
                 <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
@@ -304,74 +304,74 @@
             </defs>
 
             <!-- 1 repo -->
-            <rect x="160" y="10" width="300" height="66" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
-            <text x="310" y="37" text-anchor="middle" class="box-title" font-size="12.5">Team's policy repository</text>
-            <text x="310" y="55" text-anchor="middle" class="box-sub" font-size="10.5">SharePoint · Blob · document management system</text>
-            <line x1="310" y1="76" x2="310" y2="104" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
-            <text x="345" y="94" class="arrow-label" font-size="10">watches for new/changed files</text>
+            <rect x="140" y="10" width="400" height="66" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="340" y="37" text-anchor="middle" class="box-title" font-size="12.5">Team's policy repository</text>
+            <text x="340" y="55" text-anchor="middle" class="box-sub" font-size="10.5">SharePoint · Blob · document management system</text>
+            <line x1="340" y1="76" x2="340" y2="104" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="375" y="94" class="arrow-label" font-size="10">watches for new/changed files</text>
 
             <!-- 2 trigger -->
-            <rect x="190" y="104" width="240" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
-            <text x="310" y="137" text-anchor="middle" class="box-title" font-size="12">Sync trigger — Azure Event Grid</text>
-            <line x1="310" y1="160" x2="310" y2="188" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <rect x="210" y="104" width="260" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="340" y="137" text-anchor="middle" class="box-title" font-size="12">Sync trigger — Azure Event Grid</text>
+            <line x1="340" y1="160" x2="340" y2="188" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
 
             <!-- 3 blob -->
-            <rect x="190" y="188" width="240" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
-            <text x="310" y="212" text-anchor="middle" class="box-title" font-size="12">Blob Storage</text>
-            <text x="310" y="228" text-anchor="middle" class="box-sub" font-size="10.5">raw intake container</text>
-            <line x1="310" y1="244" x2="310" y2="272" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
-            <text x="360" y="262" class="arrow-label" font-size="10">enqueues a job</text>
+            <rect x="210" y="188" width="260" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="340" y="212" text-anchor="middle" class="box-title" font-size="12">Blob Storage</text>
+            <text x="340" y="228" text-anchor="middle" class="box-sub" font-size="10.5">raw intake container</text>
+            <line x1="340" y1="244" x2="340" y2="272" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="390" y="262" class="arrow-label" font-size="10">enqueues a job</text>
 
             <!-- 4 queue (swappable) -->
-            <rect x="170" y="272" width="280" height="60" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
-            <text x="310" y="298" text-anchor="middle" class="box-title" font-size="12.5">Queue — Azure Service Bus</text>
-            <text x="310" y="315" text-anchor="middle" class="box-sub" font-size="10">decouples ingestion from processing</text>
-            <line x1="310" y1="332" x2="310" y2="360" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
-            <text x="345" y="350" class="arrow-label" font-size="10">pulled by</text>
+            <rect x="190" y="272" width="300" height="60" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+            <text x="340" y="298" text-anchor="middle" class="box-title" font-size="12.5">Queue — Azure Service Bus</text>
+            <text x="340" y="315" text-anchor="middle" class="box-sub" font-size="10">decouples ingestion from processing</text>
+            <line x1="340" y1="332" x2="340" y2="360" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="375" y="350" class="arrow-label" font-size="10">pulled by</text>
 
             <!-- 5 workers (swappable) -->
-            <rect x="130" y="360" width="360" height="88" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
-            <text x="310" y="386" text-anchor="middle" class="box-title" font-size="12.5">Worker pool — Azure Container Apps</text>
-            <text x="310" y="404" text-anchor="middle" class="box-sub" font-size="10.5">extracts text (+ OCR fallback for scans)</text>
-            <text x="310" y="419" text-anchor="middle" class="box-sub" font-size="10.5">loads the versioned skill library</text>
-            <text x="310" y="434" text-anchor="middle" class="box-sub" font-size="10.5">containerized — deployable to any host</text>
-            <line x1="310" y1="448" x2="310" y2="476" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
-            <text x="335" y="466" class="arrow-label" font-size="10">prompts</text>
+            <rect x="170" y="360" width="340" height="88" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+            <text x="340" y="386" text-anchor="middle" class="box-title" font-size="12.5">Worker pool — Azure Container Apps</text>
+            <text x="340" y="404" text-anchor="middle" class="box-sub" font-size="10.5">extracts text (+ OCR fallback for scans)</text>
+            <text x="340" y="419" text-anchor="middle" class="box-sub" font-size="10.5">loads the versioned skill library</text>
+            <text x="340" y="434" text-anchor="middle" class="box-sub" font-size="10.5">containerized — deployable to any host</text>
+            <line x1="340" y1="448" x2="340" y2="476" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="365" y="466" class="arrow-label" font-size="10">prompts</text>
 
             <!-- 6 model (swappable) -->
-            <rect x="150" y="476" width="320" height="66" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
-            <text x="310" y="502" text-anchor="middle" class="box-title" font-size="12.5">AI model provider — Azure OpenAI (default)</text>
-            <text x="310" y="519" text-anchor="middle" class="box-sub" font-size="10.5">pluggable — any provider behind one interface</text>
-            <line x1="310" y1="542" x2="310" y2="570" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
-            <text x="365" y="560" class="arrow-label" font-size="10">structured findings</text>
+            <rect x="140" y="476" width="400" height="66" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+            <text x="340" y="502" text-anchor="middle" class="box-title" font-size="12.5">AI model provider — Azure OpenAI (default)</text>
+            <text x="340" y="519" text-anchor="middle" class="box-sub" font-size="10.5">pluggable — any provider behind one interface</text>
+            <line x1="340" y1="542" x2="340" y2="570" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="395" y="560" class="arrow-label" font-size="10">structured findings</text>
 
             <!-- 7 store (swappable) -->
-            <rect x="170" y="570" width="280" height="60" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
-            <text x="310" y="596" text-anchor="middle" class="box-title" font-size="12.5">Results store — Cosmos DB</text>
-            <text x="310" y="613" text-anchor="middle" class="box-sub" font-size="10.5">queryable, historical, trendable</text>
-            <line x1="310" y1="630" x2="310" y2="658" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
-            <text x="340" y="648" class="arrow-label" font-size="10">served via</text>
+            <rect x="190" y="570" width="300" height="60" rx="9" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+            <text x="340" y="596" text-anchor="middle" class="box-title" font-size="12.5">Results store — Cosmos DB</text>
+            <text x="340" y="613" text-anchor="middle" class="box-sub" font-size="10.5">queryable, historical, trendable</text>
+            <line x1="340" y1="630" x2="340" y2="658" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <text x="370" y="648" class="arrow-label" font-size="10">served via</text>
 
             <!-- 8 API + frontend -->
-            <rect x="190" y="658" width="240" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
-            <text x="310" y="682" text-anchor="middle" class="box-title" font-size="12">API layer</text>
-            <text x="310" y="698" text-anchor="middle" class="box-sub" font-size="10.5">same contract the current frontend already speaks</text>
-            <line x1="310" y1="714" x2="310" y2="742" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
+            <rect x="140" y="658" width="400" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="340" y="682" text-anchor="middle" class="box-title" font-size="12">API layer</text>
+            <text x="340" y="698" text-anchor="middle" class="box-sub" font-size="10.5">same contract the current frontend already speaks</text>
+            <line x1="340" y1="714" x2="340" y2="742" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/>
 
-            <rect x="150" y="742" width="320" height="60" rx="9" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
-            <text x="310" y="768" text-anchor="middle" class="box-title" font-size="12.5" fill="var(--future)">Frontend</text>
-            <text x="310" y="785" text-anchor="middle" class="box-sub" font-size="10.5" fill="var(--future)">this UI, unchanged — or embedded in Teams/SharePoint</text>
+            <rect x="140" y="742" width="400" height="60" rx="9" fill="var(--future-bg)" stroke="var(--future)" stroke-width="1.5"/>
+            <text x="340" y="768" text-anchor="middle" class="box-title" font-size="12.5" fill="var(--future)">Frontend</text>
+            <text x="340" y="785" text-anchor="middle" class="box-sub" font-size="10.5" fill="var(--future)">this UI, unchanged — or embedded in Teams/SharePoint</text>
 
             <!-- cross-cutting -->
-            <rect x="20" y="290" width="118" height="380" rx="9" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>
-            <text x="79" y="470" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.7" transform="rotate(-90 79 470)">Azure AD — identity &amp; SSO</text>
+            <rect x="20" y="290" width="100" height="380" rx="9" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>
+            <text x="70" y="480" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.7" transform="rotate(-90 70 480)">Azure AD — identity &amp; SSO</text>
 
-            <rect x="482" y="290" width="118" height="380" rx="9" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>
-            <text x="541" y="470" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.7" transform="rotate(90 541 470)">Azure Monitor — logs &amp; rule telemetry</text>
+            <rect x="560" y="290" width="100" height="380" rx="9" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>
+            <text x="610" y="480" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.7" transform="rotate(90 610 480)">Azure Monitor — logs &amp; rule telemetry</text>
 
             <!-- legend -->
-            <rect x="150" y="838" width="18" height="14" rx="3" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="4 3" stroke-width="1.3"/>
-            <text x="176" y="849" class="box-sub" font-size="11">dashed = swappable for an equivalent on any stack (see table below)</text>
+            <rect x="170" y="838" width="18" height="14" rx="3" fill="var(--ice-tint)" stroke="currentColor" stroke-dasharray="4 3" stroke-width="1.3"/>
+            <text x="196" y="849" class="box-sub" font-size="11">dashed = swappable for an equivalent on any stack (see table below)</text>
           </svg>
         </div>
         <figcaption><strong>Same skill library, same output contract</strong> as the current build — this replaces the file-polling loop with real ingestion at scale, not the review logic itself.</figcaption>
@@ -405,7 +405,7 @@
 
       <figure>
         <div class="diagram-frame">
-          <svg viewBox="0 0 940 320" role="img" aria-label="A five-stage repeating cycle: engage with a customer's subject matter expert team for one coverage line, learn the real policy language and edge cases specific to that line, co-author skill rules together, test them against that team's own real policies, and deploy the validated rules into the central skill library. The cycle then repeats for the next coverage line or team.">
+          <svg viewBox="0 0 940 330" role="img" aria-label="A five-stage repeating cycle: engage with a customer's subject matter expert team for one coverage line, learn the real policy language and edge cases specific to that line, co-author skill rules together, test them against that team's own real policies, and deploy the validated rules into the central skill library. The cycle then repeats for the next coverage line or team.">
             <defs>
               <marker id="a5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
                 <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
@@ -455,13 +455,15 @@
 
             <!-- return loop -->
             <path d="M848,130 C848,210 92,210 92,132" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a5)"/>
-            <text x="470" y="228" text-anchor="middle" class="arrow-label" font-size="11">next coverage line, or the next customer team</text>
+            <rect x="308" y="220" width="324" height="16" fill="var(--surface)"/>
+            <text x="470" y="232" text-anchor="middle" class="arrow-label" font-size="11">next coverage line, or the next customer team</text>
 
             <!-- future branch -->
-            <path d="M848,130 C848,270 620,270 620,270" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2 4" opacity="0.65" marker-end="url(#a5)"/>
-            <rect x="440" y="252" width="230" height="52" rx="9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2 4" opacity="0.75"/>
-            <text x="555" y="273" text-anchor="middle" class="box-sub" font-size="10.5" opacity="0.8">Future: route simple rules to a</text>
-            <text x="555" y="288" text-anchor="middle" class="box-sub" font-size="10.5" opacity="0.8">smaller model; complex reasoning stays frontier</text>
+            <path d="M848,130 C848,195 740,195 740,244" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2 4" opacity="0.65" marker-end="url(#a5)"/>
+            <rect x="590" y="246" width="300" height="66" rx="9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2 4" opacity="0.75"/>
+            <text x="740" y="267" text-anchor="middle" class="box-sub" font-size="10.5" opacity="0.8">Future: route simple rules</text>
+            <text x="740" y="283" text-anchor="middle" class="box-sub" font-size="10.5" opacity="0.8">to a smaller model;</text>
+            <text x="740" y="299" text-anchor="middle" class="box-sub" font-size="10.5" opacity="0.8">complex reasoning stays frontier</text>
           </svg>
         </div>
         <figcaption><strong>The library compounds:</strong> every engagement leaves behind reusable rules, not a one-off report — the next team's Wage &amp; Hour or BIPA rule starts from what the last team already validated.</figcaption>
