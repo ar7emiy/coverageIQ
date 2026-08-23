@@ -44,10 +44,12 @@
   .dek{ font-size:16px; color:var(--ink-2); max-width:66ch; margin:0; }
 
   /* ---------- tabs ---------- */
-  .tabbar{
-    position:sticky; top:0; z-index:10; display:flex; gap:4px; background:var(--bg);
-    border-bottom:1px solid var(--border); padding:14px 0; margin-bottom:40px;
+  .tabbar-row{
+    position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between;
+    gap:16px; flex-wrap:wrap; background:var(--bg); border-bottom:1px solid var(--border);
+    padding:14px 0; margin-bottom:40px;
   }
+  .tabbar{ display:flex; gap:4px; flex-wrap:wrap; }
   .tab{
     font-family:var(--font-main); font-size:13.5px; font-weight:600; color:var(--ink-3);
     background:none; border:none; padding:9px 16px; border-radius:8px; cursor:pointer;
@@ -133,6 +135,9 @@
   .phase-card li:last-child{ margin-bottom:0; }
   .phase-card.mid .phase-range{ color:var(--navy-light); }
   .phase-card.late .phase-range{ color:var(--gap); }
+  .timeline-grid.g4{ grid-template-columns:repeat(4,1fr); }
+  @media (max-width:900px){ .timeline-grid.g4{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px){ .timeline-grid.g4{ grid-template-columns:1fr; } }
 
   /* ---------- cost tables + bars ---------- */
   .table-wrap{ overflow-x:auto; }
@@ -179,6 +184,26 @@
     .tabbar{ overflow-x:auto; }
     .tab{ white-space:nowrap; }
   }
+
+  /* ---------- speaker notes ---------- */
+  .notes-toggle{
+    font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:0.03em;
+    color:var(--ink-2); background:var(--surface-2); border:1px solid var(--border-strong);
+    padding:7px 14px; border-radius:20px; cursor:pointer; flex:0 0 auto;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .notes-toggle:hover{ background:var(--ice-tint); color:var(--ink-1); }
+  body.notes-on .notes-toggle{ background:var(--navy); color:#fff; border-color:var(--navy); }
+  .speaker-note{ display:none; }
+  body.notes-on .speaker-note{
+    display:block; background:var(--navy-deep); border-radius:10px;
+    padding:14px 18px; margin-top:14px; max-width:78ch;
+  }
+  .speaker-note .sn-label{
+    font-family:var(--font-mono); font-size:9.5px; font-weight:600; letter-spacing:0.09em;
+    text-transform:uppercase; color:var(--ice); opacity:0.75; display:block; margin-bottom:7px;
+  }
+  .speaker-note p{ font-size:12.5px; line-height:1.65; color:var(--ice-tint); margin:0; }
 </style>
 </head>
 <body>
@@ -190,10 +215,13 @@
     <p class="dek">The operating model that keeps AI review trustworthy as it grows, and the concrete plan — phases, resources, and cost — for taking CoverageIQ from this pilot to production.</p>
   </header>
 
-  <nav class="tabbar" role="tablist">
-    <button class="tab active" data-tab="reliability" role="tab" aria-selected="true">Reliability at Scale</button>
-    <button class="tab" data-tab="plan" role="tab" aria-selected="false">POC to Production</button>
-  </nav>
+  <div class="tabbar-row">
+    <nav class="tabbar" role="tablist">
+      <button class="tab active" data-tab="reliability" role="tab" aria-selected="true">Reliability at Scale</button>
+      <button class="tab" data-tab="plan" role="tab" aria-selected="false">POC to Production</button>
+    </nav>
+    <button id="notesToggle" class="notes-toggle" type="button">Show speaker notes</button>
+  </div>
 
   <!-- ============================================================ -->
   <!-- RELIABILITY PANEL -->
@@ -206,6 +234,11 @@
 
       <div class="pull-quote">
         <p><span class="not">We're not asking AI to determine</span> what good coverage looks like. <span class="yes">We're using AI to consistently apply</span> standards that SMEs already defined.</p>
+      </div>
+
+      <div class="speaker-note">
+        <span class="sn-label">Speaker notes</span>
+        <p>Open here. This is the objection everyone in the room is quietly holding — "how do we know the AI isn't just making up what good coverage looks like?" Name it directly, then let the diagram answer it before anyone has to ask.</p>
       </div>
 
       <figure>
@@ -255,6 +288,72 @@
         <figcaption><strong>The AI's job is deliberately narrow:</strong> apply what SMEs and FDAs already validated, the same way on every policy — not judge what "good" means on its own. Everything above and below that box is a person or a process with actual authority over the outcome.</figcaption>
       </figure>
 
+      <div class="speaker-note">
+        <span class="sn-label">Speaker notes</span>
+        <p>Walk left to right. SMEs already know what good coverage looks like — that expertise exists in the room today, nothing new required of them conceptually. FDAs are the new role: they translate that judgment into something precise enough to test. The AI box is drawn as the narrowest one on purpose — it doesn't get an opinion, it applies what's already been decided. Point out that Legal &amp; Compliance sits downstream of AI, not upstream — they define the boundary before anything ships and audit it after. Platform &amp; Engineering is the one box that's never "done," which is why it's drawn underneath everything else instead of in the sequence.</p>
+      </div>
+    </div>
+
+    <div class="state-block">
+      <div class="state-head"><h2>What FDA + SME collaboration actually looks like</h2></div>
+      <p class="section-dek">A sample four-week cadence for taking one rule from nothing to production — one FDA, one SME, working sessions together, not a document handed back and forth.</p>
+
+      <div class="timeline-rail">
+        <span class="tick">Week 1</span><span class="bar"></span>
+        <span class="tick">2</span><span class="bar"></span>
+        <span class="tick">3</span><span class="bar"></span>
+        <span class="tick">4</span>
+      </div>
+
+      <div class="timeline-grid g4">
+        <div class="phase-card">
+          <div class="phase-range">WEEK 1</div>
+          <h3>Shadow &amp; learn</h3>
+          <ul>
+            <li>FDA sits in on the SME's actual policy reviews — real ones, not hypotheticals</li>
+            <li>FDA asks "why" at every judgment call: why this counts, why that doesn't</li>
+            <li><em>Output: a working list of edge cases, in the SME's own words</em></li>
+          </ul>
+        </div>
+        <div class="phase-card">
+          <div class="phase-range">WEEK 2</div>
+          <h3>Draft together</h3>
+          <ul>
+            <li>FDA writes the first draft of the rule; SME reviews it line by line, live</li>
+            <li>Corrections happen in the room, not as a redline emailed back a week later</li>
+            <li><em>Output: a rule draft, plus a signed-off edge-case list</em></li>
+          </ul>
+        </div>
+        <div class="phase-card mid">
+          <div class="phase-range">WEEK 3</div>
+          <h3>Test against reality</h3>
+          <ul>
+            <li>The draft rule runs against a fresh batch of that team's real, unseen policies</li>
+            <li>SME checks every result against what a person would have concluded</li>
+            <li><em>Output: a scorecard against real cases, not synthetic ones</em></li>
+          </ul>
+        </div>
+        <div class="phase-card late">
+          <div class="phase-range">WEEK 4</div>
+          <h3>Sign off &amp; deploy</h3>
+          <ul>
+            <li>SME formally signs off that the rule reflects their standard — not the FDA</li>
+            <li>Rule merges into the shared, versioned library — live for every team from that point on</li>
+            <li><em>Output: one more reusable rule, and a working rhythm for the next one</em></li>
+          </ul>
+        </div>
+      </div>
+      <p class="source-note">Illustrative cadence for one rule on one coverage line. In practice an FDA and SME team often run several rules in parallel once they've found their rhythm — the four-week arc compresses as trust and shared vocabulary build up.</p>
+
+      <div class="speaker-note">
+        <span class="sn-label">Speaker notes</span>
+        <p>This is the part executives usually can't picture — make it concrete. It's a four-week rhythm per rule, working sessions between one FDA and one SME, not a hand-off of documents. Emphasize week 3: the rule gets tested against that team's own real, unseen policies before anyone signs off — nothing goes live on a hunch. And the SME signs off, not the FDA — the domain expert keeps the actual authority the whole way through.</p>
+      </div>
+    </div>
+
+    <div class="state-block">
+      <div class="state-head"><h2>What already makes this reliable, today</h2></div>
+      <p class="section-dek">Not promises for the roadmap — mechanisms already built into the pilot.</p>
       <div class="card-grid g4">
         <div class="mech-card">
           <span class="tag">Traceable</span>
@@ -276,6 +375,11 @@
           <h3>Full audit trail</h3>
           <p>Every result records which rule version produced it and why — reviewable by Legal &amp; Compliance at any time, not just at launch.</p>
         </div>
+      </div>
+
+      <div class="speaker-note">
+        <span class="sn-label">Speaker notes</span>
+        <p>These four aren't promises for the roadmap — they're already true of the pilot the panel has seen output from. If someone asks "how do we know it won't get less careful as it scales," this is the answer: none of these four mechanisms is volume-dependent.</p>
       </div>
     </div>
 
@@ -326,6 +430,11 @@
             <li>The rule library compounds: each new engagement builds on what the last one already validated</li>
           </ul>
         </div>
+      </div>
+
+      <div class="speaker-note">
+        <span class="sn-label">Speaker notes</span>
+        <p>Emphasize continuity between phases — this isn't three separate projects, it's one team compounding its own work. Phase 1 has no customer-facing surface yet — it's earning the right to be trusted with real usage in phase 2. If asked "why not launch faster," the answer is in phase 1's own list: security review and rule validation aren't corners we're allowed to cut on an insurance product.</p>
       </div>
     </div>
 
@@ -379,6 +488,11 @@
           <h3>Change Management / Marketing</h3>
           <p>Drives real usage post-launch — internal comms, focus group studies, rollout communication.</p>
         </div>
+      </div>
+
+      <div class="speaker-note">
+        <span class="sn-label">Speaker notes</span>
+        <p>Only two of these nine are net-new headcount — the two FDAs and the part-time Scrum Master. Everything else is an existing team absorbing a bounded amount of new work, which is exactly why the cost breakdown doesn't double-count them.</p>
       </div>
     </div>
 
@@ -440,6 +554,11 @@
 
       <div class="diagram-note"><strong>Not a full cost of ownership:</strong> excludes Legal &amp; Compliance, Security, and Data/Cloud Architecture time, which are assumed to be existing shared functions absorbing this as part of their normal workload rather than net-new hires at this stage.</div>
       <p class="source-note">Salary estimates from public aggregator data (ZipRecruiter Chicago-market entry-level average for Forward Deployed Engineer roles; ZipRecruiter part-time Scrum Master average; India AI/ML engineer compensation benchmarks, converted at ~₹83/$1 with a representative offshore employer-of-record loading). Azure figures from current published Azure OpenAI, Container Apps, Service Bus, and Cosmos DB pricing at pilot-scale usage. All figures are directional estimates for planning, not vendor quotes.</p>
+
+      <div class="speaker-note">
+        <span class="sn-label">Speaker notes</span>
+        <p>Lead with the trade-off, not the number: Scenario A is the safer, faster-to-staff option; Scenario B is roughly a fourth of the cost but adds an offshore hiring and management dependency. Be upfront that these are public-data estimates, not vendor quotes — if someone asks for firmer numbers, that's the next step, not something we're pretending to already have.</p>
+      </div>
     </div>
 
   </section>
@@ -456,6 +575,11 @@
       document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+  });
+
+  document.getElementById('notesToggle').addEventListener('click', (e) => {
+    const on = document.body.classList.toggle('notes-on');
+    e.target.textContent = on ? 'Hide speaker notes' : 'Show speaker notes';
   });
 </script>
 </body>
