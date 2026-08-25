@@ -6,7 +6,7 @@ const { scanSubmissions } = require('./fileScanner');
 const { parseAnalysisMarkdown } = require('./parseAnalysis');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.wasm': 'application/wasm' };
 
 function sendJson(res, status, data) {
   res.writeHead(status, { 'Content-Type': 'application/json' });

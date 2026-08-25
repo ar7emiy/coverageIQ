@@ -1,0 +1,2 @@
+# Vendored, minified third-party files — never rewrite line endings on these.
+public/vendor/** -text

@@ -7,9 +7,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script type="module">
-  import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.min.mjs';
+  // Vendored locally (public/vendor/pdfjs/) rather than loaded from a CDN —
+  // an external cdnjs.cloudflare.com request was silently hanging on some
+  // networks (corporate proxy/firewall, DNS filtering — the browser doesn't
+  // matter, it's the network path to that specific external host), and
+  // waitForPdfjs() below had no timeout, so the PDF pane would reset to
+  // "Loading…" on every 3s poll forever without ever failing visibly.
+  // Serving these two files from the same origin as everything else removes
+  // that external dependency entirely.
+  import * as pdfjsLib from '/vendor/pdfjs/pdf.min.mjs';
   window.pdfjsLib = pdfjsLib;
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.worker.min.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.mjs';
   window.dispatchEvent(new Event('pdfjs-ready'));
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -823,6 +831,24 @@ let pdfRenderToken = 0;
 // submission changes. Without this, all of those would re-fetch and re-render
 // the whole PDF (fuzzy-matching included) even though nothing about it changed.
 let pdfPaneRenderedPrefix = null;
+// Prefix of the submission whose PDF render most recently failed. Set so the
+// poll-driven buildPdfPane() calls stop retrying it every 3s and show a
+// stable error instead of resetting to "Loading…" on every tick — cleared
+// only by the user clicking Retry, or by switching to a different submission.
+let pdfPaneErroredPrefix = null;
+// The specific error from the failed attempt, kept alongside pdfPaneErroredPrefix
+// so the message stays accurate ("timed out" vs. a generic failure) even on the
+// later poll ticks that just redisplay the cached error state, not the original one.
+let pdfPaneErrorMessage = null;
+// Prefix of the submission with a render currently in flight, or null. Every
+// 3s poll calls buildPdfPane() again regardless of whether the previous
+// attempt has finished — without this, a slow-or-hung render gets restarted
+// from scratch on every single poll tick (a fresh renderToken each time)
+// before its own timeout ever has a chance to elapse, since the stale
+// attempt's result is just discarded by the renderToken mismatch check.
+// That rolling restart — never actually failing, never actually succeeding
+// — is what a hung network request looked like: constant reloading.
+let pdfPaneLoadingPrefix = null;
 // Multiplies the auto-fit-to-pane-width scale computed in renderRealPdfPane.
 // 1 = fit exactly; user-adjustable via the zoom controls in the pdf header.
 let pdfZoomMultiplier = 1;
@@ -1001,19 +1027,63 @@ function buildPdfPane(current, detail){
     return;
   }
 
-  // Real rendering (PDF.js canvas + fuzzy-matched highlight overlays) is the
-  // primary path — the text-reconstruction below only runs as a fallback if
-  // that fails (corrupt file, pdf.js couldn't load, etc.).
+  // A previous attempt for this exact submission already failed — show the
+  // stable error state again instead of silently retrying on every 3s poll
+  // tick (that retry-forever loop is what looked like constant reloading).
+  // Only a manual Retry click (or picking a different submission) clears it.
+  if (pdfPaneErroredPrefix === current.prefix){
+    showPdfRenderError(current, pdfPaneErrorMessage);
+    return;
+  }
+
+  // A render for this exact submission is already in flight from an earlier
+  // poll tick — leave it running instead of restarting it. Its own timeout
+  // (below) is what eventually resolves this one way or another; there's no
+  // need to (and no benefit to) kicking off a second, third, fourth attempt
+  // every 3 seconds on top of it.
+  if (pdfPaneLoadingPrefix === current.prefix){
+    return;
+  }
+
+  pdfPaneLoadingPrefix = current.prefix;
   const renderToken = ++pdfRenderToken;
   pdfDocScroll.innerHTML = `<div class="empty-state-view">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
     <div class="es-title">Loading PDF…</div>
   </div>`;
-  renderRealPdfPane(current, sections, renderToken).catch(err => {
+  // waitForPdfjs() has its own timeout, but that only covers the first
+  // step — pdf.js loads its worker as a separate file, lazily, inside
+  // getDocument().promise below, with no timeout of its own. A silently
+  // hung network request there (a proxy that drops the connection instead
+  // of refusing it) would otherwise wait forever too. This outer race is
+  // the backstop for the whole operation, not just the first step of it.
+  const overallTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('PDF render timed out')), 20000));
+  Promise.race([renderRealPdfPane(current, sections, renderToken), overallTimeout]).catch(err => {
     if (renderToken !== pdfRenderToken) return; // a newer render superseded this one
-    console.error('Real PDF rendering failed, falling back to text reconstruction:', err);
-    buildPlaceholderEvidencePane(sections);
+    console.error('Real PDF rendering failed:', err);
+    pdfPaneLoadingPrefix = null;
+    pdfPaneErroredPrefix = current.prefix;
+    pdfPaneErrorMessage = err && /timed out/i.test(err.message)
+      ? 'The PDF viewer didn\'t finish loading in time.'
+      : 'Something went wrong while rendering this PDF.';
+    showPdfRenderError(current, pdfPaneErrorMessage);
   });
+}
+
+function showPdfRenderError(current, reason){
+  pdfZoomControls.style.display = 'none';
+  pdfDocScroll.innerHTML = `<div class="empty-state-view">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.64a1 1 0 00.86-1.5L13.71 3.86a1 1 0 00-1.72 0z"/></svg>
+    <div class="es-title">PDF couldn't be rendered</div>
+    <p>${reason || 'Something went wrong while rendering this PDF.'} This is usually a network issue on this machine, not a problem with the document itself.</p>
+    <button class="btn-doc-link" type="button" onclick="retryPdfRender()" style="margin-top:10px;">Retry →</button>
+  </div>`;
+}
+
+function retryPdfRender(){
+  pdfPaneErroredPrefix = null;
+  pdfPaneErrorMessage = null;
+  renderWorkspace();
 }
 
 // Applies dimming based on current selection state — called after every PDF
@@ -1038,30 +1108,19 @@ function renderPdfHighlightState(){
   });
 }
 
-// ---------- text-reconstruction fallback (original placeholder approach) ----------
-function buildPlaceholderEvidencePane(sections){
-  const groups = {};
-  sections.forEach(s => { (groups[s.page] = groups[s.page] || []).push(s); });
-  const pageKeys = Object.keys(groups).filter(k => k !== 'unknown').sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-  if (groups.unknown) pageKeys.push('unknown');
-
-  pdfDocScroll.innerHTML = pageKeys.map(pk => {
-    const heading = pk === 'unknown' ? 'Location not specified' : `Page ${pk}`;
-    const body = groups[pk].map(s => `
-      <div class="pdf-evidence-item" id="${s.id}" data-section-id="${s.id}" onclick="selectSection('${s.id}')">
-        <div class="pdf-evidence-source">${s.rules.map(r => r.label).join(' · ')}${s.detail ? ' · ' + s.detail : ''}</div>
-        <span class="pdf-text-highlight">"${s.text}"</span>
-      </div>`).join('');
-    return `<div class="pdf-sheet"><div class="pdf-section-title">${heading}</div>${body}</div>`;
-  }).join('');
-
-  renderPdfHighlightState();
-}
-
 // ---------- real PDF.js rendering + fuzzy text-match highlighting ----------
+// pdf.js is vendored locally (public/vendor/pdfjs/), not loaded from a CDN —
+// but this timeout stays as a backstop: without it, a failed/missing module
+// load leaves this promise pending forever, silently, since it only ever
+// resolves and never rejects. Every 3s poll would then reset the PDF pane
+// back to "Loading…" without ever surfacing an error — indistinguishable
+// from a constant-reload loop with no visible cause.
 function waitForPdfjs(){
   if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
-  return new Promise(resolve => window.addEventListener('pdfjs-ready', () => resolve(window.pdfjsLib), { once: true }));
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('pdf.js load timed out')), 8000);
+    window.addEventListener('pdfjs-ready', () => { clearTimeout(timer); resolve(window.pdfjsLib); }, { once: true });
+  });
 }
 
 function normalizeForMatch(s){
@@ -1237,6 +1296,7 @@ async function renderRealPdfPane(current, sections, renderToken){
     console.warn(`${unmatchedSections.size} evidence quote(s) couldn't be precisely located in the PDF text (page image quality or transcription drift) — still reachable via their rule cards.`);
   }
   pdfPaneRenderedPrefix = current.prefix;
+  pdfPaneLoadingPrefix = null;
   renderPdfHighlightState();
 }
 

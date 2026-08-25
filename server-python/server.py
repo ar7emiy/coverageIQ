@@ -18,7 +18,7 @@ from parse_analysis import parse_analysis_markdown
 PUBLIC_DIR = (Path(__file__).resolve().parent.parent / 'public').resolve()
 PREFIX_RE = re.compile(r'^/api/submissions/(\d+)$')
 PDF_RE = re.compile(r'^/api/submissions/(\d+)/pdf$')
-MIME = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml'}
+MIME = {'.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.wasm': 'application/wasm'}
 
 
 class Handler(BaseHTTPRequestHandler):
